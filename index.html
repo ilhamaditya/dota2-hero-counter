@@ -1,0 +1,1634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dota 2 Hero Counter Picker | Instant Counter-Pick Tool</title>
+<meta name="description" content="Free Dota 2 hero counter picker. Pick up to 5 enemy heroes and get ranked counter-pick recommendations with lane, item, and teamfight tips instantly.">
+<meta name="robots" content="index, follow">
+<meta name="theme-color" content="#0b0d10">
+<!-- Replace with your real deployed URL before going live. -->
+<link rel="canonical" href="https://dota2-hero-counter.example.com/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Dota 2 Hero Counter Picker | Instant Counter-Pick Tool">
+<meta property="og:description" content="Select enemy heroes and get ranked, explained Dota 2 counter picks in seconds. No sign-up, no backend, works entirely in your browser.">
+<meta property="og:url" content="https://dota2-hero-counter.example.com/">
+<!-- Swap for a proper 1200x630 social share image once one is designed. -->
+<meta property="og:image" content="https://dota2-hero-counter.example.com/favicon.svg">
+<meta property="og:image:alt" content="Dota 2 Hero Counter Picker logo">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Dota 2 Hero Counter Picker | Instant Counter-Pick Tool">
+<meta name="twitter:description" content="Select enemy heroes and get ranked, explained Dota 2 counter picks in seconds. No sign-up, no backend, works entirely in your browser.">
+<meta name="twitter:image" content="https://dota2-hero-counter.example.com/favicon.svg">
+<meta name="twitter:image:alt" content="Dota 2 Hero Counter Picker logo">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Dota 2 Hero Counter Picker",
+      "url": "https://dota2-hero-counter.example.com/",
+      "description": "Free browser tool that recommends Dota 2 counter picks for a selected enemy draft, with lane, item, and teamfight guidance.",
+      "applicationCategory": "GameApplication",
+      "operatingSystem": "Any (Web Browser)",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a Dota 2 hero counter picker?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A drafting tool that suggests heroes likely to perform well against a chosen enemy hero or draft, based on known ability and item interactions rather than live match data." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does the counter-pick scoring work?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Each candidate hero gets points for every selected enemy it counters, loses points for enemies that counter it back, and gains a small bonus for countering multiple enemies at once. See the Methodology section above for the full breakdown." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this tool work during the draft phase?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes — it's built to be used quickly during Captain's Mode or All Pick drafting. Search or tap an enemy hero and recommendations appear instantly." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this tool affiliated with Valve or Dota 2?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No. This is an independent, fan-made tool, not affiliated with, endorsed by, or sponsored by Valve Corporation. Dota and Dota 2 are trademarks of Valve Corporation. See the Disclaimer for full details." }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do Dota 2 counters change after a patch?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Valve periodically rebalances hero abilities, items, and base stats. A hero that countered another well can lose that edge — or gain a new one — after a balance patch, which is why counter data needs manual review after each major update." }
+        },
+        {
+          "@type": "Question",
+          "name": "Does this cover every Dota 2 hero?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No — this release covers a curated sample of commonly picked heroes, not the full roster. Coverage will expand over time." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data stored or tracked?",
+          "acceptedAnswer": { "@type": "Answer", "text": "No account or personal data is collected. Your last draft and filter choices may be saved to your browser's local storage only, and the tool works fully without that too." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0d10;
+    --bg-elevated: #151a20;
+    --bg-elevated-2: #1c232b;
+    --border: #2b333c;
+    --text: #eef2f5;
+    --text-dim: #aab4bd;
+    --text-faint: #929da8;
+    --accent: #e0a63a;
+    --accent-text: #1a1300;
+    --danger: #ff8585;
+    --ok: #4cd7a0;
+    --attr-strength: #e85a5f;
+    --attr-agility: #34d399;
+    --attr-intelligence: #60a5fa;
+    --attr-universal: #e0a63a;
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 16px;
+    --max-width: 880px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5;
+    font-size: 16px;
+    overflow-x: hidden;
+  }
+  main, header, footer, section { display: block; }
+  h1, h2, h3, h4 { line-height: 1.25; }
+  p { margin: 0.5em 0; }
+  a { color: var(--accent); }
+  img, svg { max-width: 100%; }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px; height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 8px; top: -50px;
+    background: var(--accent);
+    color: var(--accent-text);
+    padding: 0.5em 1em;
+    border-radius: var(--radius-sm);
+    z-index: 100;
+    transition: top 0.15s ease;
+    font-weight: 600;
+  }
+  .skip-link:focus { top: 8px; }
+
+  :focus-visible {
+    outline: 3px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  button, input, select {
+    font: inherit;
+    color: inherit;
+  }
+  button {
+    background: var(--bg-elevated-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: var(--radius-md);
+    padding: 0.6em 0.9em;
+    min-height: 44px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+  button.btn-primary {
+    background: var(--accent);
+    color: var(--accent-text);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .container {
+    max-width: var(--max-width);
+    margin: 0 auto;
+    padding: 0 16px;
+  }
+
+  .site-header {
+    border-bottom: 1px solid var(--border);
+    padding: 20px 0 14px;
+  }
+  .site-title {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+  .site-title .accent { color: var(--accent); }
+  .tagline {
+    margin: 4px 0 8px;
+    color: var(--text-dim);
+    font-size: 0.95rem;
+  }
+  .patch-badge {
+    display: inline-block;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 0.25em 0.75em;
+  }
+
+  .page-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 0.85rem;
+  }
+  .page-nav a { text-decoration: none; }
+  .page-nav a:hover { text-decoration: underline; }
+
+  .section {
+    padding: 28px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .section h2 { font-size: 1.25rem; margin-top: 0; }
+  .section:last-of-type { border-bottom: none; }
+  .lead { color: var(--text-dim); }
+
+  .ad-slot {
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-faint);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 20px 0;
+  }
+
+  .search-field {
+    width: 100%;
+    padding: 0.75em 1em;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    min-height: 48px;
+  }
+  .search-help { color: var(--text-faint); font-size: 0.85rem; }
+
+  .hero-grid-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .hero-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    padding: 10px 6px;
+    background: var(--bg-elevated);
+  }
+  .hero-tile.is-selected {
+    border-color: var(--accent);
+    background: var(--bg-elevated-2);
+  }
+  .hero-avatar {
+    position: relative;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 0.78rem;
+    border: 1.5px solid currentColor;
+    flex-shrink: 0;
+    overflow: hidden;
+    background: var(--bg-elevated-2);
+  }
+  .hero-avatar-img {
+    position: absolute;
+    inset: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+  }
+  .hero-avatar.attr-strength { color: var(--attr-strength); }
+  .hero-avatar.attr-agility { color: var(--attr-agility); }
+  .hero-avatar.attr-intelligence { color: var(--attr-intelligence); }
+  .hero-avatar.attr-universal { color: var(--attr-universal); }
+  .hero-name { font-size: 0.82rem; font-weight: 600; }
+  .hero-meta { font-size: 0.7rem; color: var(--text-faint); }
+  mark { background: var(--accent); color: var(--accent-text); border-radius: 3px; }
+  .empty-state { color: var(--text-dim); font-style: italic; }
+
+  .tray-status { color: var(--text-dim); font-size: 0.85rem; margin: 8px 0; }
+  .tray-list {
+    list-style: none;
+    display: flex; flex-wrap: wrap;
+    gap: 8px;
+    margin: 8px 0; padding: 0;
+  }
+  .tray-chip {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg-elevated-2);
+    border: 1px solid var(--accent);
+    border-radius: 999px;
+    padding: 6px 6px 6px 12px;
+    font-size: 0.85rem;
+  }
+  .tray-remove {
+    min-height: 44px; min-width: 44px;
+    padding: 0;
+    border-radius: 50%;
+    line-height: 1;
+    font-size: 1rem;
+  }
+  .tray-actions { margin-top: 10px; }
+
+  .filters-details {
+    margin-top: 8px;
+    border-top: 1px solid var(--border);
+    padding-top: 10px;
+  }
+  .filters-details summary {
+    cursor: pointer;
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  .filters-row {
+    display: flex; flex-wrap: wrap; gap: 14px;
+    margin-top: 12px;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 4px; min-width: 150px; flex: 1 1 150px; }
+  .filter-field label { font-size: 0.8rem; color: var(--text-dim); }
+  .filter-field select {
+    padding: 0.5em; min-height: 44px;
+    background: var(--bg-elevated-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+  }
+
+  .rec-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+  .rec-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--bg-elevated);
+    padding: 14px 16px;
+  }
+  .rec-card-head {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+    margin-bottom: 6px;
+  }
+  .rec-rank { color: var(--text-faint); font-weight: 700; }
+  .rec-name { margin: 0; font-size: 1.05rem; flex: 1 1 auto; }
+  .pill {
+    display: inline-flex; align-items: center;
+    font-size: 0.72rem;
+    padding: 0.2em 0.6em;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+  .pill-attr-strength { border-color: var(--attr-strength); color: var(--attr-strength); }
+  .pill-attr-agility { border-color: var(--attr-agility); color: var(--attr-agility); }
+  .pill-attr-intelligence { border-color: var(--attr-intelligence); color: var(--attr-intelligence); }
+  .pill-attr-universal { border-color: var(--attr-universal); color: var(--attr-universal); }
+  .rec-meta { font-size: 0.78rem; color: var(--text-faint); }
+  .score-readout {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-variant-numeric: tabular-nums;
+    font-weight: 700;
+  }
+  .rec-score-line { font-weight: 600; }
+  .rec-covers { color: var(--text-dim); font-size: 0.9rem; }
+  .rec-categories { color: var(--text-faint); font-size: 0.82rem; margin: 6px 0; }
+  .rec-breakdown ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  .rec-breakdown li { border-top: 1px solid var(--border); padding-top: 8px; }
+  .rec-breakdown li:first-child { border-top: none; padding-top: 0; }
+  .rec-breakdown .tip { font-size: 0.88rem; color: var(--text-dim); }
+  .rec-breakdown .items { font-size: 0.85rem; color: var(--text-faint); }
+  .rec-conflict { color: var(--danger); font-size: 0.88rem; }
+  .rec-explain { margin-top: 10px; font-size: 0.85rem; }
+  .rec-explain summary { cursor: pointer; color: var(--text-dim); min-height: 44px; display: flex; align-items: center; }
+  .rec-explain-formula { margin: 8px 0 0; color: var(--text-dim); font-size: 0.85rem; letter-spacing: 0.02em; }
+
+  .share-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 14px; }
+  .share-status { font-size: 0.85rem; color: var(--text-dim); }
+  .share-status[data-status="success"] { color: var(--ok); }
+  .share-status[data-status="error"] { color: var(--danger); }
+  .share-fallback {
+    width: 100%;
+    min-height: 140px;
+    margin-top: 8px;
+    background: var(--bg-elevated-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 0.8rem;
+    padding: 10px;
+  }
+
+  .disclaimer-box {
+    border-left: 2px solid var(--border);
+    padding: 2px 0 2px 16px;
+    font-size: 0.9rem;
+    color: var(--text-dim);
+  }
+  .disclaimer-box p:first-child { margin-top: 0; }
+  .disclaimer-box p:last-child { margin-bottom: 0; }
+  .faq-item { border-bottom: 1px solid var(--border); padding: 10px 0; }
+  .faq-item summary {
+    cursor: pointer;
+    font-weight: 600;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+  }
+  .faq-item p { color: var(--text-dim); }
+
+  .site-footer { padding: 24px 0 40px; color: var(--text-dim); font-size: 0.85rem; }
+  .footer-links { list-style: none; display: flex; flex-wrap: wrap; gap: 12px; padding: 0; margin: 0 0 12px; }
+  .footer-links a { color: var(--text-dim); }
+
+  @media (min-width: 600px) {
+    .container { padding: 0 24px; }
+    .rec-card-head { gap: 10px; }
+  }
+  @media (min-width: 900px) {
+    .hero-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition: none !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<header class="site-header">
+  <div class="container">
+    <h1 class="site-title">Dota 2 <span class="accent">Hero Counter</span> Picker</h1>
+    <p class="tagline">Pick your enemy draft, get instant, explained Dota 2 counter picks. No sign-up, no backend, nothing tracked.</p>
+    <span class="patch-badge" id="patch-badge">Loading patch info…</span>
+    <nav class="page-nav" aria-label="Page sections">
+      <a href="#counter-tool">Counter tool</a>
+      <a href="#how-it-works">How it works</a>
+      <a href="#drafting-principles">Drafting principles</a>
+      <a href="#methodology">Methodology</a>
+      <a href="#faq">FAQ</a>
+      <a href="#about">About</a>
+    </nav>
+  </div>
+</header>
+
+<noscript>
+  <div class="container"><p class="disclaimer-box">This tool needs JavaScript enabled to calculate counter-pick recommendations. Please enable JavaScript and reload the page.</p></div>
+</noscript>
+
+<main id="main-content">
+  <div class="container">
+
+    <section class="section" id="intro" aria-labelledby="intro-heading">
+      <h2 id="intro-heading">A fast Dota 2 counter picker for the draft phase</h2>
+      <p class="lead">Pick the enemy heroes you're facing. Get ranked Dota 2 counter picks with lane, item, and teamfight tips — instantly, right in your browser.</p>
+    </section>
+
+    <!-- AdSense placement: responsive banner, below introduction -->
+    <div class="ad-slot" data-ad-slot="intro-banner" aria-hidden="true"><span>Advertisement space</span></div>
+
+    <section class="section" id="counter-tool" aria-labelledby="tool-heading">
+      <h2 id="tool-heading">Build your enemy draft</h2>
+
+      <label class="visually-hidden" for="hero-search">Search for an enemy hero by name or alias</label>
+      <input type="search" id="hero-search" class="search-field" placeholder="Search a hero… e.g. “anti”, “potm”, “bara”" autocomplete="off" aria-describedby="search-help">
+      <p class="search-help" id="search-help">Search by name or alias, then tap a hero to add or remove it (up to 5).</p>
+
+      <fieldset class="hero-grid-fieldset">
+        <legend class="visually-hidden">Hero list</legend>
+        <div id="hero-grid" class="hero-grid"></div>
+      </fieldset>
+
+      <h3 class="visually-hidden">Enemy draft</h3>
+      <output class="tray-status" id="tray-status" aria-live="polite"></output>
+      <div id="enemy-tray"></div>
+      <div class="tray-actions">
+        <button type="button" id="clear-draft-btn">Clear all enemies</button>
+      </div>
+    </section>
+
+    <!-- AdSense placement: responsive banner, below selected enemy draft -->
+    <div class="ad-slot" data-ad-slot="draft-banner" aria-hidden="true"><span>Advertisement space</span></div>
+
+    <section class="section" id="filters-section" aria-labelledby="filters-heading">
+      <h2 id="filters-heading" class="visually-hidden">Filter recommendations</h2>
+      <details class="filters-details" open>
+        <summary>Filter recommendations</summary>
+        <div class="filters-row">
+          <div class="filter-field">
+            <label for="filter-position">Position</label>
+            <select id="filter-position">
+              <option value="all">All positions</option>
+              <option value="1">Position 1 — Carry</option>
+              <option value="2">Position 2 — Mid</option>
+              <option value="3">Position 3 — Offlane</option>
+              <option value="4">Position 4 — Soft Support</option>
+              <option value="5">Position 5 — Hard Support</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="filter-attribute">Attribute</label>
+            <select id="filter-attribute">
+              <option value="all">All attributes</option>
+              <option value="Strength">Strength</option>
+              <option value="Agility">Agility</option>
+              <option value="Intelligence">Intelligence</option>
+              <option value="Universal">Universal</option>
+            </select>
+          </div>
+          <div class="filter-field">
+            <label for="filter-category">Counter type</label>
+            <select id="filter-category">
+              <option value="all">All counter types</option>
+            </select>
+          </div>
+        </div>
+      </details>
+    </section>
+
+    <!-- AdSense placement: responsive banner, between filters and recommendations -->
+    <div class="ad-slot" data-ad-slot="filters-banner" aria-hidden="true"><span>Advertisement space</span></div>
+
+    <section class="section" id="recommendations-section" aria-labelledby="recommendations-heading">
+      <h2 id="recommendations-heading">Recommended counter picks</h2>
+      <div id="recommendations" aria-live="polite"></div>
+
+      <div class="share-row">
+        <button type="button" id="share-btn" class="btn-primary">Copy draft summary</button>
+        <output id="share-status" class="share-status" aria-live="polite"></output>
+      </div>
+      <textarea id="share-fallback" class="share-fallback" readonly hidden aria-label="Draft summary text, select and copy manually"></textarea>
+    </section>
+
+    <!-- AdSense placement: responsive banner, after top recommendations -->
+    <div class="ad-slot" data-ad-slot="post-results-banner" aria-hidden="true"><span>Advertisement space</span></div>
+
+    <section class="section" id="how-it-works" aria-labelledby="how-it-works-heading">
+      <h2 id="how-it-works-heading">How the Dota 2 counter picker works</h2>
+      <p>Add up to five enemy heroes and counter picks rank instantly — no server, no external API, no AI. Picks that answer more than one enemy rank higher; picks that get countered back rank lower.</p>
+      <p>Every recommendation explains itself: why it counters that enemy, a lane tip, a teamfight tip, and suggested items — not just a name.</p>
+    </section>
+
+    <section class="section" id="drafting-principles" aria-labelledby="drafting-principles-heading">
+      <h2 id="drafting-principles-heading">Dota 2 drafting principles</h2>
+      <ul>
+        <li>Draft around your team's overall win condition, not just a single counter pick.</li>
+        <li>Weigh lane safety early — a hero that "counters" an enemy on paper can still lose the lane if positions clash badly.</li>
+        <li>Track enemy item timings (Blink Dagger, Black King Bar, Aghanim's Scepter) — a counter pick's window can close once key items land.</li>
+        <li>Don't over-commit to countering one hero when the enemy has four others who also need answers.</li>
+        <li>Flexibility beats a "hard counter" that leaves your own draft with no win condition.</li>
+      </ul>
+    </section>
+
+    <section class="section" id="laning-vs-teamfight" aria-labelledby="laning-vs-teamfight-heading">
+      <h2 id="laning-vs-teamfight-heading">Laning counters vs. teamfight counters</h2>
+      <p>Not every Dota 2 hero counter works the same way. A <strong>Lane Counter</strong> wins the 1v1 or 2v2 exchange early — denying farm and experience — but may fall off by the mid-game. A <strong>Disable</strong>, <strong>Break</strong>, or <strong>Save</strong> counter often matters more in 5v5 teamfights, regardless of how the laning stage went. Each recommendation card separates its laning tip from its teamfight tip so you know which stage of the game the counter pick actually matters in.</p>
+    </section>
+
+    <section class="section" id="patch-impact" aria-labelledby="patch-impact-heading">
+      <h2 id="patch-impact-heading">Why patch changes affect counters</h2>
+      <p>Valve periodically rebalances hero abilities, base stats, and items. A Dota 2 counter pick that's strong one patch can weaken — or a previously weak matchup can become excellent — after a balance update. That's why this tool displays the patch and review date its matchup data was last checked against, and why counter data should always be treated as guidance to verify against current patch notes, not a permanent fact.</p>
+    </section>
+
+    <section class="section" id="methodology" aria-labelledby="methodology-heading">
+      <h2 id="methodology-heading">Methodology: how the score is calculated</h2>
+      <p>Counters come from real Dota 2 match data (via OpenDota), not guesswork. Each hero's listed counters are the opponents it has actually lost to most often, among the 31 heroes covered here — the 0-5 score reflects how one-sided that matchup is.</p>
+      <p>When you draft more than one enemy, a pick's score adds up across every enemy it counters, drops if an enemy counters it back, and gets a small bonus for answering more than one enemy at once. Filters only narrow which heroes are shown, not their score. Ties break by hero name, so the same draft always gives the same result.</p>
+      <p>This is a snapshot from one point in time, covering a 31-hero sample — not a live feed. Treat it as guidance and double-check against current patch notes.</p>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faq-heading">
+      <h2 id="faq-heading">Frequently asked questions</h2>
+      <details class="faq-item">
+        <summary>What is a Dota 2 hero counter picker?</summary>
+        <p>A drafting tool that suggests heroes likely to perform well against a chosen enemy hero or draft, based on known ability and item interactions rather than live match data.</p>
+      </details>
+      <details class="faq-item">
+        <summary>How does the counter-pick scoring work?</summary>
+        <p>Each candidate hero gets points for every selected enemy it counters, loses points for enemies that counter it back, and gains a small bonus for countering multiple enemies at once. See the <a href="#methodology">Methodology</a> section above for the full breakdown.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Does this tool work during the draft phase?</summary>
+        <p>Yes — it's built to be used quickly during Captain's Mode or All Pick drafting. Search or tap an enemy hero and recommendations appear instantly.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is this tool affiliated with Valve or Dota 2?</summary>
+        <p>No. This is an independent, fan-made tool, not affiliated with, endorsed by, or sponsored by Valve Corporation. Dota and Dota 2 are trademarks of Valve Corporation. See the <a href="#disclaimer">Disclaimer</a> for full details.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Why do Dota 2 counters change after a patch?</summary>
+        <p>Valve periodically rebalances hero abilities, items, and base stats. A hero that countered another well can lose that edge — or gain a new one — after a balance patch, which is why counter data needs manual review after each major update.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Does this cover every Dota 2 hero?</summary>
+        <p>No — this release covers a curated sample of commonly picked heroes, not the full roster. Coverage will expand over time.</p>
+      </details>
+      <details class="faq-item">
+        <summary>Is my data stored or tracked?</summary>
+        <p>No account or personal data is collected. Your last draft and filter choices may be saved to your browser's local storage only, and the tool works fully without that too.</p>
+      </details>
+    </section>
+
+    <!-- AdSense placement: responsive banner, before FAQ/footer boundary -->
+    <div class="ad-slot" data-ad-slot="pre-footer-banner" aria-hidden="true"><span>Advertisement space</span></div>
+
+    <section class="section" id="about" aria-labelledby="about-heading">
+      <h2 id="about-heading">About</h2>
+      <p>Dota 2 Hero Counter Picker is a small, independently maintained side project built to make counter-picking faster during drafts. It has no account system, no backend, and no paid tiers — everything runs from a single static page with a hand-curated dataset.</p>
+    </section>
+
+    <section class="section" id="disclaimer" aria-labelledby="disclaimer-heading">
+      <h2 id="disclaimer-heading">Disclaimer</h2>
+      <div class="disclaimer-box">
+        <p>This is an independent, fan-made tool. It is not affiliated with, endorsed by, or sponsored by Valve Corporation. Dota and Dota 2 are trademarks or registered trademarks of Valve Corporation.</p>
+        <p>Matchups and recommendations may change after gameplay or balance patches. Recommendations are general guidance, not guaranteed outcomes. Always verify information against current patch notes and your own match context before relying on it.</p>
+      </div>
+    </section>
+
+    <section class="section" id="privacy" aria-labelledby="privacy-heading">
+      <h2 id="privacy-heading">Privacy policy</h2>
+      <p>This site collects no personal data and requires no account. It works fully without cookies and without analytics. Your enemy draft and filter selections may optionally be saved in your browser's local storage so your last session is restored on return visits — this data never leaves your device. If Google AdSense is enabled in the future, ads served by Google may use cookies per Google's own advertising policies; this page will be updated if that changes.</p>
+    </section>
+
+    <section class="section" id="terms" aria-labelledby="terms-heading">
+      <h2 id="terms-heading">Terms of use</h2>
+      <p>This tool is provided "as is," free of charge, for informational and entertainment purposes. No warranty is made about the accuracy or completeness of any recommendation. Use of this site implies acceptance of these terms and of the <a href="#disclaimer">disclaimer</a> above.</p>
+    </section>
+
+    <section class="section" id="contact" aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Contact</h2>
+      <!-- Replace with your real contact address before deploying. -->
+      <p>Questions, corrections, or matchup feedback: <a href="mailto:hello@dota2-hero-counter.example.com">hello@dota2-hero-counter.example.com</a></p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <ul class="footer-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#privacy">Privacy Policy</a></li>
+      <li><a href="#disclaimer">Disclaimer</a></li>
+      <li><a href="#terms">Terms of Use</a></li>
+      <li><a href="#methodology">Methodology</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+    <p id="patch-footer-text"></p>
+    <p>Not affiliated with Valve Corporation. Dota and Dota 2 are trademarks or registered trademarks of Valve Corporation.</p>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ======================================================================
+  // APPLICATION METADATA
+  // To update after a balance patch review: change these three fields only.
+  // ======================================================================
+  var APP_META = {
+    patch: '7.41d',
+    lastReviewed: '2026-07-20',
+    dataVersion: '1.0.0'
+  };
+
+  // ======================================================================
+  // HERO DATA
+  // How to add a new hero: append an object to HEROES with a unique kebab-
+  // case "id" (never reuse or change an existing id — matchups reference it),
+  // its display "name", an "aliases" array of lowercase search shortcuts,
+  // "attribute" (must be one of VALID_ATTRIBUTES), "positions" (array of
+  // integers 1-5, must be in VALID_POSITIONS), "roles" (free-text tags used
+  // only for display), "difficulty" ("Easy" | "Medium" | "Hard"), and "icon"
+  // (that hero's official Valve internal codename, used to load its portrait
+  // from Dota 2's own CDN — see "How to find a hero's icon codename" below).
+  // How to add an alias: push a lowercase string into that hero's "aliases".
+  // How to update positions: edit the "positions" array in place.
+  // How to find a hero's icon codename: usually the hero's name in
+  // lowercase snake_case (e.g. "Phantom Assassin" -> "phantom_assassin"),
+  // but some heroes keep an older internal name (Nature's Prophet ->
+  // "furion", Windranger -> "windrunner", Io -> "wisp"). Check
+  // https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/icons/<icon>.png
+  // resolves before adding it. If a hero has no known codename or the image
+  // 404s, omit "icon" entirely — the initials badge is always the fallback.
+  // ======================================================================
+  var HEROES = [
+    { id: 'anti-mage', name: 'Anti-Mage', aliases: ['am'], attribute: 'Agility', positions: [1], roles: ['Carry', 'Escape'], difficulty: 'Medium', icon: 'antimage' },
+    { id: 'phantom-assassin', name: 'Phantom Assassin', aliases: ['pa'], attribute: 'Agility', positions: [1], roles: ['Carry', 'Escape'], difficulty: 'Medium', icon: 'phantom_assassin' },
+    { id: 'juggernaut', name: 'Juggernaut', aliases: ['jugg'], attribute: 'Agility', positions: [1], roles: ['Carry', 'Pusher'], difficulty: 'Easy', icon: 'juggernaut' },
+    { id: 'terrorblade', name: 'Terrorblade', aliases: ['tb'], attribute: 'Agility', positions: [1], roles: ['Carry', 'Illusionist'], difficulty: 'Medium', icon: 'terrorblade' },
+    { id: 'naga-siren', name: 'Naga Siren', aliases: ['naga'], attribute: 'Agility', positions: [1, 3], roles: ['Carry', 'Illusionist', 'Pusher'], difficulty: 'Hard', icon: 'naga_siren' },
+    { id: 'faceless-void', name: 'Faceless Void', aliases: ['void', 'fv'], attribute: 'Agility', positions: [1], roles: ['Carry', 'Initiator', 'Disabler'], difficulty: 'Medium', icon: 'faceless_void' },
+    { id: 'spectre', name: 'Spectre', aliases: [], attribute: 'Agility', positions: [1], roles: ['Carry', 'Illusionist', 'Durable'], difficulty: 'Medium', icon: 'spectre' },
+    { id: 'drow-ranger', name: 'Drow Ranger', aliases: ['drow'], attribute: 'Agility', positions: [1, 2], roles: ['Carry', 'Pusher'], difficulty: 'Easy', icon: 'drow_ranger' },
+    { id: 'templar-assassin', name: 'Templar Assassin', aliases: ['ta'], attribute: 'Agility', positions: [2, 3], roles: ['Carry', 'Disabler', 'Nuker'], difficulty: 'Medium', icon: 'templar_assassin' },
+    { id: 'viper', name: 'Viper', aliases: [], attribute: 'Agility', positions: [2, 3], roles: ['Carry', 'Disabler', 'Nuker'], difficulty: 'Easy', icon: 'viper' },
+    { id: 'mirana', name: 'Mirana', aliases: ['potm'], attribute: 'Agility', positions: [2, 3], roles: ['Disabler', 'Nuker', 'Escape'], difficulty: 'Easy', icon: 'mirana' },
+    { id: 'lycan', name: 'Lycan', aliases: [], attribute: 'Agility', positions: [1, 3], roles: ['Carry', 'Pusher', 'Summoner'], difficulty: 'Hard', icon: 'lycan' },
+    { id: 'axe', name: 'Axe', aliases: [], attribute: 'Strength', positions: [3], roles: ['Initiator', 'Durable', 'Disabler'], difficulty: 'Easy', icon: 'axe' },
+    { id: 'pudge', name: 'Pudge', aliases: [], attribute: 'Strength', positions: [3, 4, 5], roles: ['Disabler', 'Nuker', 'Durable'], difficulty: 'Medium', icon: 'pudge' },
+    { id: 'spirit-breaker', name: 'Spirit Breaker', aliases: ['bara'], attribute: 'Strength', positions: [3, 4], roles: ['Initiator', 'Disabler', 'Durable'], difficulty: 'Medium', icon: 'spirit_breaker' },
+    { id: 'huskar', name: 'Huskar', aliases: [], attribute: 'Strength', positions: [1, 3], roles: ['Carry', 'Nuker', 'Durable'], difficulty: 'Medium', icon: 'huskar' },
+    { id: 'bristleback', name: 'Bristleback', aliases: ['bristle'], attribute: 'Strength', positions: [3], roles: ['Durable', 'Initiator', 'Disabler'], difficulty: 'Easy', icon: 'bristleback' },
+    { id: 'tidehunter', name: 'Tidehunter', aliases: ['tide'], attribute: 'Strength', positions: [3], roles: ['Initiator', 'Durable', 'Disabler'], difficulty: 'Medium', icon: 'tidehunter' },
+    { id: 'earthshaker', name: 'Earthshaker', aliases: ['es'], attribute: 'Strength', positions: [3, 4], roles: ['Initiator', 'Disabler', 'Nuker'], difficulty: 'Medium', icon: 'earthshaker' },
+    { id: 'omniknight', name: 'Omniknight', aliases: ['omni'], attribute: 'Strength', positions: [5, 4, 3], roles: ['Durable', 'Support', 'Disabler'], difficulty: 'Easy', icon: 'omniknight' },
+    { id: 'invoker', name: 'Invoker', aliases: [], attribute: 'Intelligence', positions: [2], roles: ['Nuker', 'Disabler', 'Support'], difficulty: 'Hard', icon: 'invoker' },
+    { id: 'lion', name: 'Lion', aliases: [], attribute: 'Intelligence', positions: [5, 4], roles: ['Disabler', 'Support', 'Nuker'], difficulty: 'Easy', icon: 'lion' },
+    { id: 'crystal-maiden', name: 'Crystal Maiden', aliases: ['cm'], attribute: 'Intelligence', positions: [5], roles: ['Support', 'Disabler', 'Nuker'], difficulty: 'Easy', icon: 'crystal_maiden' },
+    { id: 'ancient-apparition', name: 'Ancient Apparition', aliases: ['aa'], attribute: 'Intelligence', positions: [5, 4], roles: ['Support', 'Nuker', 'Disabler'], difficulty: 'Easy', icon: 'ancient_apparition' },
+    { id: 'storm-spirit', name: 'Storm Spirit', aliases: ['storm'], attribute: 'Intelligence', positions: [2], roles: ['Escape', 'Nuker', 'Initiator'], difficulty: 'Hard', icon: 'storm_spirit' },
+    { id: 'io', name: 'Io', aliases: ['wisp'], attribute: 'Universal', positions: [4, 5], roles: ['Support', 'Disabler'], difficulty: 'Hard', icon: 'wisp' },
+    { id: 'enigma', name: 'Enigma', aliases: [], attribute: 'Universal', positions: [3, 4], roles: ['Initiator', 'Disabler', 'Summoner'], difficulty: 'Hard', icon: 'enigma' },
+    { id: 'natures-prophet', name: "Nature's Prophet", aliases: ['furion', 'np'], attribute: 'Universal', positions: [3, 2], roles: ['Pusher', 'Summoner', 'Escape'], difficulty: 'Medium', icon: 'furion' },
+    { id: 'windranger', name: 'Windranger', aliases: ['wr'], attribute: 'Universal', positions: [2, 4], roles: ['Disabler', 'Nuker', 'Escape'], difficulty: 'Hard', icon: 'windrunner' },
+    { id: 'dazzle', name: 'Dazzle', aliases: [], attribute: 'Universal', positions: [5, 4], roles: ['Support', 'Disabler', 'Nuker'], difficulty: 'Easy', icon: 'dazzle' },
+    { id: 'venomancer', name: 'Venomancer', aliases: ['veno'], attribute: 'Universal', positions: [3, 4], roles: ['Disabler', 'Nuker', 'Pusher'], difficulty: 'Easy', icon: 'venomancer' }
+  ];
+
+  // ======================================================================
+  // MATCHUP DATA
+  // How to add a counter relationship: push an entry into MATCHUPS[heroId]
+  // with a "counterHeroId" that exists in HEROES, a "score" (see rubric
+  // below), 1-3 "categories" from CATEGORY_VOCAB, a "reason", "laneTip",
+  // "teamfightTip", and a "suggestedItems" array.
+  // How to change a counter score: edit that entry's "score" in place.
+  // How to add item suggestions: edit that entry's "suggestedItems" array.
+  // How to disable an outdated recommendation without deleting its history:
+  // add `disabled: true` to the entry — it is skipped everywhere in the app.
+  // Scoring rubric: 5 excellent, 4 strong, 3 useful, 2 minor, 1 slight,
+  // 0 neutral, negative = unfavorable for the counter pick.
+  // ======================================================================
+  var MATCHUPS = {
+    "anti-mage": [
+      { counterHeroId: "phantom-assassin", score: 5, categories: ["Mobility Control", "Teamfight"], reason: "Blur's evasion sharply cuts into the autoattack damage Anti-Mage needs to win fights, and Coup de Grace critical strikes burst him down before Battle Fury farm or a reactive Blink escape can save him.", laneTip: "Play aggressive once you hit level 6, using Stifling Dagger to slow Anti-Mage before he can Blink out of your engage range.", teamfightTip: "Blink Strike onto Anti-Mage the instant he jumps a backline target, then chain Coup de Grace crits before he can Blink away again.", suggestedItems: ["Silver Edge", "Abyssal Blade", "Desolator"] },
+      { counterHeroId: "spirit-breaker", score: 3, categories: ["Disable", "Mobility Control"], reason: "Charge of Darkness lets Spirit Breaker close from anywhere on the map and Greater Bash stunlocks Anti-Mage before he can Blink to safety.", laneTip: "Hold Charge until Anti-Mage overextends for a last hit, then bash-lock him for a kill or forced Blink burn.", teamfightTip: "Charge Anti-Mage the moment he Blinks in on your carry so Greater Bash keeps him locked down before he can jump out again.", suggestedItems: ["Blade Mail", "Boots of Travel", "Solar Crest"] },
+      { counterHeroId: "crystal-maiden", score: 3, categories: ["Disable", "Lane Counter"], reason: "Frostbite roots Anti-Mage in place during ganks, denying the Blink escape that normally lets him disengage and farm freely.", laneTip: "Pair Frostbite with your partner's damage to lock Anti-Mage down for kills instead of letting him trade autoattacks.", teamfightTip: "Save Frostbite for the moment Anti-Mage blinks onto a carry so he can't cast Blink again while rooted.", suggestedItems: ["Aghanim's Shard", "Glimmer Cape", "Force Staff"] },
+      { counterHeroId: "axe", score: 2, categories: ["Disable", "Teamfight"], reason: "Berserker's Call forces Anti-Mage to attack Axe instead of farming or escaping, and Culling Blade executes him once his low base HP pool drops.", laneTip: "Use Counter Helix's passive proc chance to punish Anti-Mage's frequent last-hit attacks in melee range.", teamfightTip: "Call Anti-Mage in before he can Blink to a flank, then look for the Culling Blade execute as his health drops.", suggestedItems: ["Blink Dagger", "Blade Mail", "Assault Cuirass"] },
+      { counterHeroId: "templar-assassin", score: 2, categories: ["Vision", "Teamfight"], reason: "Refraction absorbs and reflects several instances of Anti-Mage's attacks while Psionic Trap vision lets Templar Assassin ambush him before he can farm safely.", laneTip: "Place a Psionic Trap near the pull camp or jungle entrance to catch Anti-Mage's farming pattern early.", teamfightTip: "Pop Refraction before engaging so his autoattacks are absorbed while you burst him down with Desolator-backed damage.", suggestedItems: ["Blink Dagger", "Desolator", "Black King Bar"] }
+    ],
+    "phantom-assassin": [
+      { counterHeroId: "huskar", score: 4, categories: ["Silence", "Teamfight"], reason: "Burning Spear's damage-over-time ignores Blur evasion because it isn't an attack instance, and Inner Fire's silence locks out Blink Strike and Stifling Dagger while Berserker's Blood ramps Huskar's own damage in the trade.", laneTip: "Auto-attack to stack Burning Spear, then Inner Fire to silence her escape and strip armor before committing to the all-in.", teamfightTip: "Inner Fire the Phantom Assassin on sight to silence her initiation, then Life Break to close and trade through her crits.", suggestedItems: ["Armlet of Mordiggian", "Helm of the Dominator", "Black King Bar"] },
+      { counterHeroId: "viper", score: 4, categories: ["Break", "Lane Counter"], reason: "Nethertoxin breaks Blur's evasion so Viper's poison attacks connect reliably, while Poison Attack's slow and ranged harass keep Phantom Assassin from ever closing to melee range.", laneTip: "Poison Attack every hit in lane to stack slow and damage; Phantom Assassin can't out-trade a ranged poison harasser without evasion helping her.", teamfightTip: "Land Nethertoxin on Phantom Assassin before she engages so Blur no longer protects her from your follow-up damage.", suggestedItems: ["Dragon Lance", "Hurricane Pike", "Aghanim's Shard"] },
+      { counterHeroId: "pudge", score: 3, categories: ["Disable", "Lane Counter"], reason: "Meat Hook's stun locks Phantom Assassin down before she can crit, and Dismember's channeled damage ignores Blur evasion since it isn't an autoattack.", laneTip: "Fish for Meat Hook whenever Phantom Assassin steps up for a last hit; a landed hook usually means a kill in lane.", teamfightTip: "Hook the Phantom Assassin out of position first, then Dismember to guarantee damage her evasion can't dodge.", suggestedItems: ["Blink Dagger", "Aether Lens", "Blade Mail"] },
+      { counterHeroId: "storm-spirit", score: 3, categories: ["Mobility Control", "Teamfight"], reason: "Ball Lightning lets Storm Spirit dodge Phantom Assassin's melee engage entirely while Overload and Static Remnant deal pure magic burst that Blur evasion cannot dodge.", laneTip: "Farm Ball Lightning charges safely at range and only commit when you can burst her down before she closes the gap.", teamfightTip: "Ball Lightning in to burst Phantom Assassin from range with Overload procs before she gets a single crit off.", suggestedItems: ["Orchid Malevolence", "Eul's Scepter of Divinity", "Bloodthorn"] },
+      { counterHeroId: "spirit-breaker", score: 2, categories: ["Disable", "Mobility Control"], reason: "Charge of Darkness catches Phantom Assassin from across the map and Greater Bash keeps her stunlocked before she can land a crit sequence.", laneTip: "Charge in the moment Phantom Assassin commits to a last hit near you; the bash chain usually secures the kill.", teamfightTip: "Focus Charge onto Phantom Assassin first since a locked-down PA never gets to use her crits.", suggestedItems: ["Blade Mail", "Boots of Travel", "Solar Crest"] }
+    ],
+    "juggernaut": [
+      { counterHeroId: "drow-ranger", score: 3, categories: ["Silence", "Lane Counter"], reason: "Frost Arrows and ranged Marksman damage let Drow Ranger kill Juggernaut from a distance he can't easily close, and Gust's silence and knockback interrupt his Blade Fury or Omnislash before it does damage.", laneTip: "Harass with Frost Arrows from max range so Juggernaut can never safely walk up for a last hit or Blade Fury trade.", teamfightTip: "Save Gust for the instant Juggernaut activates Blade Fury or channels Omnislash to cancel his window entirely.", suggestedItems: ["Dragon Lance", "Yasha", "Aghanim's Shard"] },
+      { counterHeroId: "omniknight", score: 2, categories: ["Save", "Dispel"], reason: "Guardian Angel grants the whole team physical damage immunity that shuts down Juggernaut's entirely physical kit, while Repel purges slows and lets an ally survive his burst.", laneTip: "Keep Repel on your carry in lane so Blade Fury and Omnislash damage gets diluted by the extra movement speed and status resistance.", teamfightTip: "Pop Guardian Angel the instant Juggernaut channels Omnislash so his blade jumps deal zero damage to your team.", suggestedItems: ["Guardian Greaves", "Aghanim's Scepter", "Solar Crest"] },
+      { counterHeroId: "venomancer", score: 2, categories: ["Lane Counter", "Push Punishment"], reason: "Poison Nova and Plague Ward damage keep ticking well past Blade Fury's short magic-immunity window, wearing Juggernaut down faster than he can farm it back.", laneTip: "Stack Plague Wards near the lane to zone Juggernaut off creeps and force him to eat poison damage whenever he approaches.", teamfightTip: "Poison Nova on sight of Juggernaut to apply lasting damage that outlasts his Blade Fury spin.", suggestedItems: ["Aghanim's Shard", "Shiva's Guard", "Octarine Core"] },
+      { counterHeroId: "naga-siren", score: 2, categories: ["Save", "Push Punishment"], reason: "Mirror Image illusions soak up Omnislash's random jump targets, wasting swings that would otherwise hit real heroes, while Song of the Siren lets Naga's team disengage before the ultimate connects.", laneTip: "Split push a different lane than Juggernaut so your faster illusion-based farm out-paces his and forces bad trades.", teamfightTip: "Cast Mirror Image before engaging so Omnislash wastes jumps on illusions instead of your carries, then Song of the Siren to reset if it goes wrong.", suggestedItems: ["Manta Style", "Diffusal Blade", "Aghanim's Scepter"] },
+      { counterHeroId: "lycan", score: 2, categories: ["Push Punishment", "High Armor"], reason: "Lycan's wolves and Shapeshift let him out-split-push and out-race Juggernaut's own pushing game, and Feral Impulse's armor and damage buff let him win the trades that follow.", laneTip: "Send a wolf to your lane's jungle camps early to snowball your split-push advantage before Juggernaut can match it.", teamfightTip: "Shapeshift in to burst Juggernaut down before his Blade Fury spin-up finishes, using Feral Impulse's armor to survive the trade.", suggestedItems: ["Helm of the Overlord", "Echo Sabre", "Aghanim's Scepter"] }
+    ],
+    "terrorblade": [
+      { counterHeroId: "drow-ranger", score: 2, categories: ["Illusion Clear", "Lane Counter"], reason: "Drow Ranger's ranged Marksman damage kills Terrorblade's illusions from safety without ever entering his melee Metamorphosis range, and Gust silences Sunder or Reflection at the critical moment.", laneTip: "Stay at max Frost Arrows range so Terrorblade's illusions can't safely farm the lane against you.", teamfightTip: "Focus fire down illusions from range with Marksman damage, then Gust the real Terrorblade before he can Sunder to safety.", suggestedItems: ["Dragon Lance", "Yasha", "Aghanim's Shard"] },
+      { counterHeroId: "phantom-assassin", score: 2, categories: ["Illusion Clear", "Teamfight"], reason: "Blur evasion reduces the chip damage Terrorblade's illusions land on Phantom Assassin, while her Coup de Grace crits shred through illusions and the real hero alike before Sunder can save him.", laneTip: "Farm safely under evasion and look to burst down whichever illusion or real Terrorblade steps into your crit range.", teamfightTip: "Blink Strike onto the cluster of illusions and crit through them quickly to find and finish the real Terrorblade.", suggestedItems: ["Desolator", "Blink Dagger", "Abyssal Blade"] },
+      { counterHeroId: "axe", score: 2, categories: ["Illusion Clear", "Disable"], reason: "Counter Helix's AoE proc mows down clusters of Terrorblade's illusions in melee range, and Berserker's Call taunts everyone nearby so the real hero can't hide among his copies.", laneTip: "Stand in the illusion wave and let Counter Helix procs clear them passively while you threaten the real Terrorblade.", teamfightTip: "Berserker's Call the whole illusion cluster to force attacks and reveal the real Terrorblade for a Culling Blade execute.", suggestedItems: ["Blink Dagger", "Blade Mail", "Assault Cuirass"] },
+      { counterHeroId: "spirit-breaker", score: 2, categories: ["Mobility Control", "Push Punishment"], reason: "Charge of Darkness picks Terrorblade off wherever he's split-pushing or farming with illusions, and burst damage kills his low base HP pool before Sunder can trade him into a fresher body.", laneTip: "Track Terrorblade's splitpush lane and Charge in the moment he's isolated with his illusions.", teamfightTip: "Charge the real Terrorblade the instant he shows to prevent a Sunder swap before Greater Bash finishes him.", suggestedItems: ["Blade Mail", "Boots of Travel", "Solar Crest"] },
+      { counterHeroId: "faceless-void", score: 2, categories: ["Disable", "Teamfight"], reason: "Chronosphere locks Terrorblade down so he can't Sunder into a healthier illusion or Metamorphosis away, and Backtrack gives Faceless Void a chance to shrug off illusion attacks during the chaos.", laneTip: "Play patient in lane and look to time a Time Walk close once Terrorblade over-extends his illusions.", teamfightTip: "Chronosphere on top of Terrorblade before he can Sunder, then focus him down while he's frozen in place.", suggestedItems: ["Blink Dagger", "Skadi", "Butterfly"] }
+    ],
+    "naga-siren": [
+      { counterHeroId: "storm-spirit", score: 2, categories: ["Mobility Control", "Illusion Clear"], reason: "Ball Lightning closes the distance instantly before Naga Siren can cast Song of the Siren to escape, and Overload's magic burst kills her illusions in a single hit since they take bonus magic damage.", laneTip: "Farm Ball Lightning charges nearby and dive in the moment Naga Siren tries to split push away from her lane.", teamfightTip: "Ball Lightning onto Naga Siren before she can channel Song of the Siren, then burst her down with Overload procs.", suggestedItems: ["Orchid Malevolence", "Eul's Scepter of Divinity", "Bloodthorn"] },
+      { counterHeroId: "crystal-maiden", score: 2, categories: ["Disable", "Illusion Clear"], reason: "Frostbite roots Naga Siren in place so she can't channel Song of the Siren to disengage, and Freezing Field's repeated magic ticks instantly clear her illusions.", laneTip: "Freezing Field the illusion wave when Naga Siren tries to push out a lane; the AoE ticks kill copies fast.", teamfightTip: "Frostbite Naga Siren the moment she tries to cast Song of the Siren so your team can finish the kill uninterrupted.", suggestedItems: ["Aghanim's Shard", "Glimmer Cape", "Force Staff"] },
+      { counterHeroId: "enigma", score: 2, categories: ["Disable", "Illusion Clear"], reason: "Black Hole locks Naga Siren down without being interrupted by her own Song of the Siren sleep since the channel is already underway, and Midnight Pulse's damage tears through her illusions.", laneTip: "Farm Eidolons safely and rotate Black Hole onto Naga Siren whenever she overextends her split push.", teamfightTip: "Black Hole the real Naga Siren before she reacts, then Midnight Pulse to clear any illusions caught in the radius.", suggestedItems: ["Blink Dagger", "Refresher Orb", "Aghanim's Scepter"] },
+      { counterHeroId: "dazzle", score: 1, categories: ["Save", "Lane Counter"], reason: "Poison Touch's slow catches Naga Siren before she can retreat or sleep the team with Song of the Siren, and Shadow Wave sustains allies through her illusion harass while Shallow Grave denies a burst kill.", laneTip: "Poison Touch Naga Siren whenever she pushes the wave so she can't safely retreat into her split-push pattern.", teamfightTip: "Shallow Grave your core before diving Naga Siren's team so her illusions' burst damage can't secure the kill.", suggestedItems: ["Glimmer Cape", "Aether Lens", "Aghanim's Scepter"] },
+      { counterHeroId: "terrorblade", score: 1, categories: ["Push Punishment", "Illusion Clear"], reason: "Terrorblade's own illusions out-farm and out-push Naga Siren's split lanes, forcing a race he wins with Metamorphosis melee burst and a Sunder to swap into a healthier body when contested.", laneTip: "Send your illusions to farm the same lanes Naga Siren tries to split push so you out-gold her over time.", teamfightTip: "Metamorphosis into melee form to burst Naga Siren down quickly before her Song of the Siren can save her team.", suggestedItems: ["Manta Style", "Battle Fury", "Aghanim's Scepter"] }
+    ],
+    "faceless-void": [
+      { counterHeroId: "tidehunter", score: 3, categories: ["Disable", "Teamfight"], reason: "Ravage lands a long-duration AoE stun that can lock down Void and his team before he ever gets a clean window to cast Chronosphere.", laneTip: "Stay spread out near the river and ravine pre-6 so Tidehunter can't land a leveled Ravage on your lane.", teamfightTip: "Bait out Time Walk before committing, then unload Ravage the instant Void engages so his Chronosphere never comes online.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Black King Bar"] },
+      { counterHeroId: "viper", score: 3, categories: ["Break", "Anti-Heal"], reason: "Nethertoxin applies Break, shutting off Time Lock's passive stun proc, while stacking poison damage chips Void down without ever trading auto-attacks.", laneTip: "Throw Poison Attack every cooldown to stack Corrosive Skin damage and deny Void the last hits his build depends on.", teamfightTip: "Land Nethertoxin on Void the moment he engages so his attacks stop procing Time Lock while the poison ticks him down.", suggestedItems: ["Orchid Malevolence", "Bloodthorn", "Aghanim's Shard"] },
+      { counterHeroId: "ancient-apparition", score: 3, categories: ["Anti-Heal", "Disable"], reason: "Ice Blast blocks all healing and regeneration while chunking Void's health, denying him the sustain he needs to survive extended fights.", laneTip: "Poke with Chilling Touch and time Cold Feet's delayed stun to punish Void's greedy last hits.", teamfightTip: "Hold Ice Blast until after Void commits so no lifesteal or regen item can bring his HP back during the fight.", suggestedItems: ["Aghanim's Scepter", "Aether Lens", "Glimmer Cape"] },
+      { counterHeroId: "phantom-assassin", score: 3, categories: ["Teamfight", "Mobility Control"], reason: "Blur's evasion directly counters Void's near-total reliance on physical auto-attacks, while Coup de Grace threatens to burst him down before he finds a clean Chronosphere.", laneTip: "Farm behind Blur's evasion and avoid unnecessary trades so mana stays available for a Phantom Strike escape.", teamfightTip: "Wait for Void to burn Time Walk before diving so Coup de Grace lands on a target with no escape left.", suggestedItems: ["Desolator", "Black King Bar", "Silver Edge"] },
+      { counterHeroId: "huskar", score: 2, categories: ["Disable", "Teamfight"], reason: "Life Break lets Huskar close the gap instantly and burst Void down with a percentage-max-HP nuke that stuns on impact, sidestepping Void's attack-based damage race entirely.", laneTip: "Chip Void with Burning Spear stacks from range while Berserker's Blood keeps your attack speed rising at low HP.", teamfightTip: "Jump onto Void with Life Break as soon as he shows so he's removed before he can commit to Chronosphere.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] }
+    ],
+    "spectre": [
+      { counterHeroId: "juggernaut", score: 4, categories: ["Magic Immunity", "Teamfight"], reason: "Blade Fury's spell immunity lets Jugg ignore Spectral Dagger's slow, and Omnislash's repeated hits burst down the real Spectre faster than Dispersion's damage reduction can offset.", laneTip: "Farm with Blade Fury to clear creeps safely and avoid getting caught by Spectral Dagger's slow trail.", teamfightTip: "Save Omnislash for when Spectre commits to Haunt so her illusions can't dilute your target priority.", suggestedItems: ["Battle Fury", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "lion", score: 3, categories: ["Disable", "Silence", "Mana Burn"], reason: "Lion's stun-into-hex chain locks Spectre down before she can engage, and Mana Drain starves the mana pool she needs for Spectral Dagger and Haunt.", laneTip: "Use Earth Spike to punish Spectre's early lane weakness and Mana Drain to slow her item timings.", teamfightTip: "Hex Spectre the moment she Haunts in so she can't reposition or use Spectral Dagger to escape.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Aether Lens"] },
+      { counterHeroId: "invoker", score: 3, categories: ["Mana Burn", "Disable", "Teamfight"], reason: "EMP burns the mana Spectre relies on for Haunt and Spectral Dagger, while Sun Strike and Deafening Blast can delete a squishy, low-HP Spectre from across the map.", laneTip: "Poke with Cold Snap procs and hold EMP for when Spectre overextends to farm.", teamfightTip: "Sun Strike Spectre before she Haunts in so she's already low when she arrives.", suggestedItems: ["Aether Lens", "Blink Dagger", "Octarine Core"] },
+      { counterHeroId: "drow-ranger", score: 3, categories: ["Silence", "Mobility Control"], reason: "Gust silences Spectre and knocks her back, interrupting her Haunt or Spectral Dagger engage before she ever reaches Drow's range.", laneTip: "Kite with Frost Arrows so Spectre can never trade in melee range during the laning stage.", teamfightTip: "Gust Spectre the instant she Haunts in to silence her before she can reposition with Spectral Dagger.", suggestedItems: ["Hurricane Pike", "Black King Bar", "Aghanim's Shard"] },
+      { counterHeroId: "natures-prophet", score: 2, categories: ["Push Punishment", "Mobility Control"], reason: "Teleportation lets Nature's Prophet match Spectre's global split-push threat instantly, while his summons punish her for leaving lanes unattended.", laneTip: "Push with Nature's Call summons to force Spectre to react instead of farming freely.", teamfightTip: "Teleport to defend whichever side Spectre Haunts into rather than trying to out-race her across the map.", suggestedItems: ["Boots of Travel", "Aghanim's Scepter", "Veil of Discord"] }
+    ],
+    "drow-ranger": [
+      { counterHeroId: "enigma", score: 5, categories: ["Disable", "Teamfight"], reason: "Black Hole locks down Drow entirely with no counter-play, and Demonic Conversion's eidolons swarm close enough to disable her Marksman damage bonus.", laneTip: "Respect Enigma's jungle timing and avoid overextending once Malefice becomes available.", teamfightTip: "Focus Enigma before he can channel Black Hole, since Drow has no reliable escape once it lands.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Scepter"] },
+      { counterHeroId: "lycan", score: 4, categories: ["Push Punishment", "Teamfight"], reason: "Lycan's wolves and Feral Impulse buff enable a fast physical push that outpaces Drow's farm-and-kite pattern, and Shapeshift closes the gap on her instantly.", laneTip: "Expect early wolf harass and play a safer pull pattern to avoid losing lane tempo.", teamfightTip: "Group early to punish Lycan's push before his wolves and Shapeshift snowball out of control.", suggestedItems: ["Helm of the Overlord", "Echo Sabre", "Black King Bar"] },
+      { counterHeroId: "crystal-maiden", score: 3, categories: ["Disable", "Lane Counter"], reason: "Frostbite roots Drow in place through several instances of damage, denying the last hits and safe positioning her kiting playstyle depends on.", laneTip: "Play around Frostbite's cast range and avoid greedy last hits when Crystal Maiden has mana for it.", teamfightTip: "Land Frostbite on Drow before she can reposition, since it locks her down for the fight's opening seconds.", suggestedItems: ["Aghanim's Scepter", "Glimmer Cape", "Aether Lens"] },
+      { counterHeroId: "anti-mage", score: 2, categories: ["Mana Burn", "Mobility Control"], reason: "Mana Break drains the mana Drow needs for Gust and Multishot, and Blink lets Anti-Mage close her range advantage instantly, canceling her Marksman bonus at close quarters.", laneTip: "Deny creeps carefully, since Mana Break punishes Drow's spell usage in lane over time.", teamfightTip: "Blink onto Drow first in fights so her Marksman bonus disables and she can't kite from range.", suggestedItems: ["Battle Fury", "Manta Style", "Black King Bar"] },
+      { counterHeroId: "natures-prophet", score: 2, categories: ["Disable", "Mobility Control"], reason: "Sprout traps Drow in place, denying her kiting entirely, while Teleportation lets Nature's Prophet reposition or flank her instantly.", laneTip: "Watch for tree-based Sprout setups when pushing out of position to farm.", teamfightTip: "Sprout Drow the instant she tries to kite so her team can close the distance.", suggestedItems: ["Boots of Travel", "Aghanim's Scepter", "Orchid Malevolence"] }
+    ],
+    "templar-assassin": [
+      { counterHeroId: "naga-siren", score: 4, categories: ["Save", "Mobility Control"], reason: "Song of the Siren lets Naga's team disengage from Templar Assassin's Meld ambush entirely, while Rip Tide's slow prevents her from closing distance again.", laneTip: "Use Mirror Image illusions to bait Refraction charges cheaply while farming safely.", teamfightTip: "Sing to reset the fight whenever Templar Assassin lands a burst combo from Meld.", suggestedItems: ["Aghanim's Scepter", "Manta Style", "Diffusal Blade"] },
+      { counterHeroId: "bristleback", score: 4, categories: ["High Armor", "Teamfight"], reason: "Quill Spray and Viscous Nasal Goo apply many small damage instances that burn through Refraction's limited charges quickly, and Bristleback's tanky HP lets him survive once those charges run out.", laneTip: "Face Bristleback to avoid extra Quill Spray damage from behind while trading in lane.", teamfightTip: "Wait for Templar Assassin to spend her Refraction charges before committing your engage.", suggestedItems: ["Crimson Guard", "Assault Cuirass", "Black King Bar"] },
+      { counterHeroId: "faceless-void", score: 3, categories: ["Disable", "Teamfight"], reason: "Chronosphere locks Templar Assassin in place so she can't Meld away, letting Void's team burst her down safely once her Refraction charges are exhausted.", laneTip: "Play patiently and avoid isolated trades that could get punished once Void hits level 6.", teamfightTip: "Land Chronosphere on Templar Assassin specifically rather than her allies to remove her escape option.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Shard"] },
+      { counterHeroId: "huskar", score: 3, categories: ["Disable", "Teamfight"], reason: "Life Break stuns and bursts Templar Assassin with max-HP-based damage, draining her Refraction charges faster than Berserker's Blood attack speed lets him keep pressuring her.", laneTip: "Keep Burning Spear stacks up on Templar Assassin whenever she comes in for last hits.", teamfightTip: "Jump onto Templar Assassin with Life Break before she can Meld away from the fight.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "windranger", score: 2, categories: ["Disable", "Lane Counter"], reason: "Shackleshot locks Templar Assassin down before she can Meld into an ambush, and Focus Fire's rapid true-strike attacks burn through her Refraction charges faster than they recharge.", laneTip: "Land Powershot for safe poke damage without needing to trade in melee range.", teamfightTip: "Shackleshot Templar Assassin on sight before she gets the chance to Meld into position.", suggestedItems: ["Euls Scepter", "Orchid Malevolence", "Aghanim's Shard"] }
+    ],
+    "viper": [
+      { counterHeroId: "io", score: 4, categories: ["Save", "Mobility Control"], reason: "Spirit Link shares Viper's poison damage onto Io, who heals it right back through Tether, while Relocate lets the whole team dodge a Viper Strike setup instantly.", laneTip: "Tether the carry to sustain through Viper's poison harass rather than trading directly.", teamfightTip: "Relocate the team away before Viper can land Viper Strike on a priority target.", suggestedItems: ["Aghanim's Scepter", "Aether Lens", "Boots of Travel"] },
+      { counterHeroId: "venomancer", score: 3, categories: ["Anti-Heal", "Lane Counter"], reason: "Venomancer out-poisons Viper directly with Venomous Gale and Poison Nova, and Plague Wards zone him out of the lane where he has no escape to fall back on.", laneTip: "Stack Poison Sting and Venomous Gale to win the poison damage race outright.", teamfightTip: "Poison Nova the moment Viper commits, since he has no mobility tool to dodge the pulses.", suggestedItems: ["Orchid Malevolence", "Aghanim's Scepter", "Aether Lens"] },
+      { counterHeroId: "mirana", score: 3, categories: ["Disable", "Lane Counter"], reason: "Sacred Arrow punishes Viper's complete lack of mobility from max range, landing a stun he has no way to dodge or escape.", laneTip: "Line up Sacred Arrow whenever Viper pushes up to last hit without support cover.", teamfightTip: "Open fights with Sacred Arrow on Viper since he can't reposition once it's cast.", suggestedItems: ["Aghanim's Scepter", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "omniknight", score: 2, categories: ["Magic Immunity", "Save", "Dispel"], reason: "Repel grants magic immunity that fully blocks Poison Attack, Nethertoxin, and Viper Strike, while Purification cleanses any poison stacks that land beforehand.", laneTip: "Repel the carry proactively when Viper starts stacking poison harass.", teamfightTip: "Guardian Angel the team before Viper can land Viper Strike on a key target.", suggestedItems: ["Aghanim's Scepter", "Pipe of Insight", "Guardian Greaves"] },
+      { counterHeroId: "spectre", score: 2, categories: ["Mobility Control", "Teamfight"], reason: "Dispersion reduces the physical portion of Viper's harass, and Spectral Dagger's slow closes the distance despite Viper having no escape of his own.", laneTip: "Farm passively and use Spectral Dagger to reposition away from Viper's poison stacks.", teamfightTip: "Haunt in on Viper specifically since he has no mobility skill to flee with.", suggestedItems: ["Radiance", "Black King Bar", "Blink Dagger"] }
+    ],
+    "mirana": [
+      { counterHeroId: "earthshaker", score: 5, categories: ["Disable", "Teamfight"], reason: "Fissure blocks Mirana's positioning and Leap escape route, and Echo Slam punishes her for standing near allies while lining up Sacred Arrow.", laneTip: "Watch Fissure cooldown before wandering into stacked terrain to land Sacred Arrow.", teamfightTip: "Fissure Mirana's escape path the moment she commits to a Sacred Arrow read.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Black King Bar"] },
+      { counterHeroId: "phantom-assassin", score: 4, categories: ["Mobility Control", "Teamfight"], reason: "Phantom Strike closes the distance on Mirana instantly, and Coup de Grace's critical burst kills her low base HP before she can line up Sacred Arrow.", laneTip: "Punish Mirana's aggressive Sacred Arrow attempts by farming under tower.", teamfightTip: "Phantom Strike onto Mirana first to remove her before she can support the fight.", suggestedItems: ["Desolator", "Battle Fury", "Black King Bar"] },
+      { counterHeroId: "venomancer", score: 3, categories: ["Anti-Heal", "Lane Counter"], reason: "Venomous Gale's slow prevents Mirana from Leaping away, while stacking poison damage wears her down faster than she can farm safely.", laneTip: "Poke with Venomous Gale whenever Mirana steps up for a Sacred Arrow attempt.", teamfightTip: "Slow Mirana with Venomous Gale before she can reposition with Leap.", suggestedItems: ["Orchid Malevolence", "Aghanim's Scepter", "Aether Lens"] },
+      { counterHeroId: "tidehunter", score: 2, categories: ["Disable", "Teamfight"], reason: "Ravage's AoE stun catches Mirana regardless of her positioning or wards, landing before she can Leap to safety.", laneTip: "Group for an early Ravage pickoff on Mirana while she's still squishy.", teamfightTip: "Initiate Ravage on Mirana's position directly since she has no disable of her own to trade back.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Black King Bar"] },
+      { counterHeroId: "templar-assassin", score: 1, categories: ["Vision", "Lane Counter"], reason: "Meld lets Templar Assassin burst Mirana down from an invisible ambush before she can react, and Psionic Trap reveals her when she tries to ward or scout from the trees.", laneTip: "Avoid standing still near trees where Templar Assassin can set up a Meld ambush.", teamfightTip: "Check for Psionic Traps before repositioning to land Sacred Arrow from tree lines.", suggestedItems: ["Blink Dagger", "Desolator", "Aghanim's Shard"] }
+    ],
+    "lycan": [
+      { counterHeroId: "dazzle", score: 3, categories: ["Save"], reason: "Shallow Grave neutralizes the burst window from Lycan's Shapeshift crit and wolves, denying the pick-off his split-push timing depends on.", laneTip: "Trade with Poison Touch and Shadow Wave sustain against the wolves' early harass instead of trying to out-last them.", teamfightTip: "Shallow Grave the priority target the instant Lycan pops Shapeshift to initiate.", suggestedItems: ["Aether Lens", "Glimmer Cape", "Solar Crest"] },
+      { counterHeroId: "huskar", score: 2, categories: ["Lane Counter", "Push Punishment"], reason: "Burning Spear's damage-over-time rapidly kills Lycan's summoned wolves while Life Break lets Huskar execute Lycan directly rather than chase his Shapeshift speed.", laneTip: "Toggle Armlet and trade aggressively before level 6 to punish Lycan's early wolf harass.", teamfightTip: "Save Life Break to burst Lycan down once he's already committed to Shapeshift.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "naga-siren", score: 2, categories: ["Mobility Control", "Push Punishment"], reason: "Ensnare roots Lycan even through his Shapeshift speed burst, and Song of the Siren lets Naga's team safely regroup against his split-push timing.", laneTip: "Use Mirror Image illusions to soak side-lane farm so Lycan can't simply out-map you.", teamfightTip: "Ensnare Lycan the moment he engages in Shapeshift to lock him in place for the kill.", suggestedItems: ["Blink Dagger", "Manta Style", "Diffusal Blade"] },
+      { counterHeroId: "terrorblade", score: 2, categories: ["Save", "Push Punishment"], reason: "Sunder lets Terrorblade instantly swap health with a healthy ally to dodge Lycan's burst, while his own illusion-based split push matches or outpaces Lycan's farm.", laneTip: "Farm safely in melee Metamorphosis form until you can match Lycan's power spike.", teamfightTip: "Sunder onto a full-health ally the instant Lycan threatens you with Shapeshift burst.", suggestedItems: ["Blink Dagger", "Manta Style", "Eye of Skadi"] }
+    ],
+    "axe": [
+      { counterHeroId: "lycan", score: 3, categories: ["Mobility Control", "Lane Counter"], reason: "Lycan's Shapeshift speed lets him stay outside Berserker's Call's taunt radius and Culling Blade's cast range, denying Axe the isolated pick-off he needs.", laneTip: "Keep wolves spread out so Berserker's Call can't taunt your whole lane at once.", teamfightTip: "Use Shapeshift to reposition out of Culling Blade range before Axe can execute a low-HP ally.", suggestedItems: ["Boots of Travel", "Helm of the Overlord", "Solar Crest"] },
+      { counterHeroId: "naga-siren", score: 3, categories: ["Disable", "Mobility Control"], reason: "Song of the Siren puts Axe to sleep before he can land Berserker's Call, and Ensnare shuts him down if he does manage to initiate.", laneTip: "Play passively and scout with Mirror Image illusions so Axe can't blindside you with Call.", teamfightTip: "Cast Song of the Siren the moment Axe moves to initiate, before Berserker's Call goes off.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Manta Style"] },
+      { counterHeroId: "huskar", score: 2, categories: ["Lane Counter", "Teamfight"], reason: "Life Break's burst damage doesn't proc Counter Helix, letting Huskar execute Axe without feeding his passive counterattack spins.", laneTip: "Toggle Armlet and trade in short bursts rather than prolonged attack strings that trigger Counter Helix.", teamfightTip: "Save Life Break to finish Axe once he has already spent Call and Culling Blade.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "earthshaker", score: 2, categories: ["Teamfight", "Disable"], reason: "Earthshaker can bait Berserker's Call and then Echo Slam centered on himself, punishing every hero the taunt pulled in.", laneTip: "Use Fissure to block Axe's chase lines before he can Call-combo you in lane.", teamfightTip: "Let Axe Call you, then land Echo Slam on yourself to hit every enemy he pulled in.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Aether Lens"] },
+      { counterHeroId: "enigma", score: 2, categories: ["Disable", "Teamfight"], reason: "Black Hole locks Axe down before he can land Berserker's Call, and if he does clump enemies onto himself it only sets up a bigger Black Hole or Midnight Pulse tick.", laneTip: "Farm safely with Eidolons and avoid contesting Axe's Call range until you have your ultimate.", teamfightTip: "Use Black Hole to lock down Axe and his allies together instead of dueling him in isolation.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Scepter"] }
+    ],
+    "pudge": [
+      { counterHeroId: "lycan", score: 3, categories: ["Mobility Control", "Lane Counter"], reason: "Lycan's Shapeshift burst speed lets him dodge Meat Hook's skillshot and outrun Pudge before Dismember can be channeled.", laneTip: "Keep wolves scouting river and high-ground spots to spot Pudge's hook angle before it's thrown.", teamfightTip: "Use Shapeshift to close in or flee the instant Pudge whiffs Meat Hook, punishing his cooldown.", suggestedItems: ["Boots of Travel", "Helm of the Overlord", "Solar Crest"] },
+      { counterHeroId: "naga-siren", score: 2, categories: ["Save", "Push Punishment"], reason: "Song of the Siren lets Naga's team fall asleep and avoid the follow-up burst the instant Pudge lands Meat Hook, wasting his engage.", laneTip: "Split push separate lanes so a single hooked hero can't snowball your whole team.", teamfightTip: "Cast Song of the Siren immediately after Pudge hooks a teammate to deny the kill.", suggestedItems: ["Blink Dagger", "Manta Style", "Aghanim's Shard"] },
+      { counterHeroId: "drow-ranger", score: 2, categories: ["Silence", "Lane Counter"], reason: "Gust silences Pudge and knocks him back, breaking Dismember's channel range and interrupting his combo.", laneTip: "Stay at max attack range and slow Pudge with Frost Arrows if he tries to walk up for a hook angle.", teamfightTip: "Gust Pudge the instant he channels Dismember to cancel it and shove him away from your team.", suggestedItems: ["Black King Bar", "Aghanim's Scepter", "Manta Style"] },
+      { counterHeroId: "viper", score: 2, categories: ["Lane Counter", "Mobility Control"], reason: "Viper's stacking Poison Attack slow keeps Pudge from ever closing hook range, and Viper Strike can lock down and burst him while he's out of position.", laneTip: "Poison Attack Pudge on cooldown to whittle him and prevent him from getting hook range on you.", teamfightTip: "Use Viper Strike to lock down and finish Pudge before he can Dismember your carry.", suggestedItems: ["Black King Bar", "Aghanim's Scepter", "Boots of Travel"] },
+      { counterHeroId: "dazzle", score: 1, categories: ["Save"], reason: "Shallow Grave prevents Pudge's hook-into-Dismember combo from securing the kill, buying time for the target's team to peel or fight back.", laneTip: "Keep Shallow Grave available on whichever ally sits at hook range near river angles.", teamfightTip: "Pre-emptively Shallow Grave the likely hook target before contesting objectives near hook sightlines.", suggestedItems: ["Aether Lens", "Glimmer Cape", "Force Staff"] }
+    ],
+    "spirit-breaker": [
+      { counterHeroId: "io", score: 5, categories: ["Save", "Mobility Control"], reason: "Relocate can instantly pull the Charge of Darkness target to safety or teleport allies in to punish Spirit Breaker's overcommitted gank.", laneTip: "Keep Tether on your carry so you can react instantly the moment Spirit Breaker's Charge is spotted.", teamfightTip: "Relocate the moment Spirit Breaker charges a squishy ally to save them and reposition your team to punish him.", suggestedItems: ["Aether Lens", "Force Staff", "Aghanim's Shard"] },
+      { counterHeroId: "omniknight", score: 5, categories: ["Magic Immunity", "Teamfight"], reason: "Guardian Angel grants the whole team physical damage immunity, completely negating Greater Bash and Nether Strike's physical damage output.", laneTip: "Use Purification to out-heal Spirit Breaker's early Charge of Darkness poke in lane.", teamfightTip: "Pop Guardian Angel just before Spirit Breaker charges in to make his entire physical burst irrelevant.", suggestedItems: ["Aghanim's Scepter", "Glimmer Cape", "Solar Crest"] },
+      { counterHeroId: "huskar", score: 2, categories: ["Lane Counter", "Teamfight"], reason: "Berserker's Blood lifesteal and Inner Vitality sustain let Huskar tank Charge of Darkness's impact and Greater Bash, then burn Spirit Breaker down with Burning Spear.", laneTip: "Toggle Armlet and trade through Charge of Darkness harass since your sustain outheals his poke.", teamfightTip: "Use Life Break to execute Spirit Breaker once he's spent his Charge and Bash on your frontline.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "mirana", score: 2, categories: ["Vision", "Mobility Control"], reason: "Moonlight Shadow turns the team invisible, making Spirit Breaker's Charge of Darkness lose its target and whiff entirely.", laneTip: "Stun Spirit Breaker with Sacred Arrow at range before his Charge of Darkness ever gets going.", teamfightTip: "Cast Moonlight Shadow the instant Spirit Breaker locks onto a target with Charge to make him lose it.", suggestedItems: ["Aghanim's Shard", "Boots of Travel", "Aether Lens"] },
+      { counterHeroId: "naga-siren", score: 2, categories: ["Save", "Disable"], reason: "Song of the Siren makes the Charge of Darkness target invulnerable and untargetable, causing Spirit Breaker's charge to fizzle harmlessly.", laneTip: "Split push freely since Spirit Breaker can't threaten a target protected by an available Song of the Siren.", teamfightTip: "Cast Song of the Siren the moment Spirit Breaker begins charging an ally to nullify the gank.", suggestedItems: ["Blink Dagger", "Manta Style", "Aghanim's Shard"] }
+    ],
+    "huskar": [
+      { counterHeroId: "naga-siren", score: 4, categories: ["Save", "Disable"], reason: "Song of the Siren makes Naga's ally invulnerable and untargetable, completely nullifying Huskar's Life Break execute the instant he leaps in.", laneTip: "Play the lane patiently since Huskar's early aggression fades once you can back allies with Song of the Siren at level 6.", teamfightTip: "Cast Song of the Siren on whichever ally Huskar targets with Life Break to void his entire burst window.", suggestedItems: ["Blink Dagger", "Manta Style", "Aghanim's Shard"] },
+      { counterHeroId: "venomancer", score: 3, categories: ["Lane Counter", "Teamfight"], reason: "Venomous Gale and Poison Sting stack damage-over-time that Huskar can't cleanse, punishing the low-HP state his Berserker's Blood wants him to stay in.", laneTip: "Harass with Venomous Gale and Plague Wards to keep Huskar's HP low and vulnerable before level 6.", teamfightTip: "Use Poison Nova to melt Huskar's health pool as a DoT that punishes him for staying at low HP.", suggestedItems: ["Orchid Malevolence", "Aghanim's Scepter", "Shadow Blade"] },
+      { counterHeroId: "natures-prophet", score: 3, categories: ["Lane Counter", "Mobility Control"], reason: "Nature's Prophet can Teleport away from Huskar's early lane aggression entirely, and Sprout can wall off his approach or block a Life Break gap-close.", laneTip: "Teleport to a safer lane or the jungle whenever Huskar's Armlet timing threatens to bully you off the lane.", teamfightTip: "Sprout around Huskar or his target to block his Life Break approach path.", suggestedItems: ["Boots of Travel", "Aghanim's Scepter", "Orchid Malevolence"] },
+      { counterHeroId: "dazzle", score: 2, categories: ["Save"], reason: "Shallow Grave prevents Huskar's Life Break from securing a kill even after the burst lands, buying time for the team to respond.", laneTip: "Keep Shadow Wave available to out-heal Huskar's Burning Spear poke in lane.", teamfightTip: "Pre-cast Shallow Grave on Huskar's likely Life Break target before he commits to the jump.", suggestedItems: ["Aether Lens", "Glimmer Cape", "Force Staff"] },
+      { counterHeroId: "ancient-apparition", score: 2, categories: ["Anti-Heal", "Lane Counter"], reason: "Ice Blast's healing block stops Huskar's Berserker's Blood lifesteal and Life Break's self-heal from working, stranding him at low HP.", laneTip: "Chill Huskar with Cold Feet and Chilling Touch to zone him off last hits without trading attacks.", teamfightTip: "Land Ice Blast on Huskar before he dives so Life Break can't heal him back to safety.", suggestedItems: ["Aghanim's Scepter", "Glimmer Cape", "Aether Lens"] }
+    ],
+    "bristleback": [
+      { counterHeroId: "io", score: 4, categories: ["Save", "Mobility Control"], reason: "Tether's bonus regen and Overcharge let Io's carry burst Bristleback down before his stacked Quill Spray sustain and Warpath speed take over, while Relocate repositions the pair out of his melee range.", laneTip: "Tether onto your laning partner to out-sustain Bristleback's quill trades and use Spirits to poke him from range without entering melee.", teamfightTip: "Tether your hardest hitting ally and pop Overcharge before engaging so he dies to burst before Quill Spray stacks pay off, then Relocate the team out if he ults.", suggestedItems: ["Aether Lens", "Glimmer Cape", "Force Staff"] },
+      { counterHeroId: "terrorblade", score: 3, categories: ["Push Punishment", "Teamfight"], reason: "Terrorblade's illusions absorb Quill Spray procs for free while he farms or splits elsewhere, and Sunder plus Metamorphosis let him survive and out-carry Bristleback's own damage late.", laneTip: "Send illusions to soak Quill Spray harass in lane while you stay safe and take last hits from range.", teamfightTip: "Send illusions in first to bait Quill Spray procs, then Sunder into the fight with Metamorphosis active to out-trade him.", suggestedItems: ["Manta Style", "Aghanim's Scepter", "Eye of Skadi"] },
+      { counterHeroId: "viper", score: 3, categories: ["Mana Burn", "Anti-Heal", "Mobility Control"], reason: "Nethertoxin's mana burn starves Bristleback of the mana his Quill Spray spam requires and cuts his healing, while the poison slow keeps him from ever closing to melee range.", laneTip: "Stack Poison Attack slows to keep distance and force him to walk instead of engage, wearing down his mana pool.", teamfightTip: "Land Nethertoxin on him pre-fight to drain his mana and reduce his healing, then kite with the poison slow.", suggestedItems: ["Orchid Malevolence", "Diffusal Blade", "Eye of Skadi"] },
+      { counterHeroId: "lycan", score: 3, categories: ["Push Punishment", "Mobility Control"], reason: "Lycan's wolves tank Quill Spray procs cheaply while he split-pushes elsewhere, and Shapeshift's speed and damage let him burst the fragile-outside-his-stacks Bristleback down in a straight duel.", laneTip: "Send wolves to soak quill harass and pull aggro while you out-trade with Feral Impulse attack speed.", teamfightTip: "Shapeshift straight onto Bristleback and kill him before his stacked Quill Spray sustain and Goo armor reduction compound.", suggestedItems: ["Helm of the Overlord", "Desolator", "Black King Bar"] },
+      { counterHeroId: "naga-siren", score: 3, categories: ["Disable", "Teamfight", "Save"], reason: "Mirror Image illusions soak Quill Spray for free, Ensnare roots him before he can close distance, and Song of the Siren lets Naga's team disengage entirely from his ultimate window.", laneTip: "Trade with illusions absorbing his quill harass while your real hero stays safe, and Ensnare him if he tries to dive.", teamfightTip: "Song of the Siren to reset a bad engage against his ultimate, then Ensnare him before he can use Warpath speed to escape.", suggestedItems: ["Diffusal Blade", "Manta Style", "Aghanim's Scepter"] }
+    ],
+    "tidehunter": [
+      { counterHeroId: "huskar", score: 3, categories: ["Silence", "Teamfight"], reason: "Burning Spear's pure damage ignores Tidehunter's stacked armor, and Life Break's true-strike burst can delete him before he lines up Ravage, while Inner Fire's silence denies his cast entirely.", laneTip: "Harass with Burning Spear stacks and use Inner Fire's silence to shut down his Gush setups; your regen items outlast his single poke.", teamfightTip: "Save Life Break to instantly burst Tidehunter down with true-strike damage before he can land Ravage.", suggestedItems: ["Armlet of Mordiggian", "Helm of the Dominator", "Blink Dagger"] },
+      { counterHeroId: "viper", score: 2, categories: ["Mana Burn", "Mobility Control"], reason: "Nethertoxin's mana burn starves Tidehunter of the mana needed to spam Gush and Ravage, while the poison slow keeps him from ever closing distance to land his combo.", laneTip: "Stack Poison Attack slows to force him to walk instead of engage, wearing down his mana with Corrosive Skin's persistent damage.", teamfightTip: "Burn his mana with Nethertoxin before the fight so he can't afford Ravage, then kite him with the poison slow.", suggestedItems: ["Orchid Malevolence", "Diffusal Blade", "Bottle"] },
+      { counterHeroId: "naga-siren", score: 2, categories: ["Save", "Disable"], reason: "Song of the Siren's team-wide invulnerable sleep can be triggered the instant Ravage lands, negating his chain-stun follow-up damage entirely, while Ensnare roots him before he can initiate.", laneTip: "Avoid grouping for easy Gush trades and Ensnare him if he over-extends to harass.", teamfightTip: "The instant Ravage connects, channel Song of the Siren to save the team from the follow-up, then Ensnare Tidehunter to stop his escape.", suggestedItems: ["Diffusal Blade", "Manta Style", "Aghanim's Scepter"] },
+      { counterHeroId: "drow-ranger", score: 2, categories: ["Silence", "Teamfight"], reason: "Wave of Silence shuts down Tidehunter's Ravage and Gush initiation, and Marksmanship's bonus evasion against melee attacks lets Drow avoid his physical follow-up.", laneTip: "Stack Frost Arrow slows to keep range from his Gush combo, and use Wave of Silence to cancel any dive attempt.", teamfightTip: "Silence Tidehunter before he can channel Ravage, or if it lands, kite with Frost Arrows since Marksmanship's evasion mitigates his melee damage.", suggestedItems: ["Maelstrom", "Eye of Skadi", "Black King Bar"] },
+      { counterHeroId: "pudge", score: 2, categories: ["Disable", "Lane Counter"], reason: "Meat Hook can isolate or pick off Tidehunter before he's in range to land Ravage, and Dismember's channeled damage locks him down long enough to burst him solo.", laneTip: "Hook Tidehunter whenever he steps up for a Gush trade, denying him easy lane aggression.", teamfightTip: "Hook Tidehunter out of position before he can initiate Ravage, or Dismember him mid-fight to burst him down 1v1.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Aether Lens"] }
+    ],
+    "earthshaker": [
+      { counterHeroId: "huskar", score: 3, categories: ["Silence", "Disable"], reason: "Inner Fire's silence denies Earthshaker's spell-cast Aftershock stun combo, and Life Break's true-strike burst can delete him before he lines up Echo Slam.", laneTip: "Trade aggressively with Burning Spear stacks; your regen and Berserker's Blood sustain outlasts his single Fissure poke.", teamfightTip: "Silence Earthshaker with Inner Fire before he channels Echo Slam, or burst him first with Life Break so his stun chain never starts.", suggestedItems: ["Armlet of Mordiggian", "Blink Dagger", "Black King Bar"] },
+      { counterHeroId: "spirit-breaker", score: 2, categories: ["Disable", "Lane Counter"], reason: "Charge of Darkness closes the distance instantly to interrupt Earthshaker's Fissure or Echo Slam channel before he can land it, and Greater Bash punishes his squishy HP pool.", laneTip: "Charge in whenever Earthshaker over-extends for a Fissure trade; Greater Bash procs punish his low armor before he retreats.", teamfightTip: "Charge directly onto Earthshaker to cancel his Echo Slam channel before it goes off.", suggestedItems: ["Blade Mail", "Boots of Bearing", "Black King Bar"] },
+      { counterHeroId: "venomancer", score: 2, categories: ["Lane Counter", "Teamfight"], reason: "Venomancer's poisons and wards chip Earthshaker down from range without needing to clump for fights, denying the stacked bodies that make Echo Slam worth casting.", laneTip: "Stack Venomous Gale and Poison Sting to zone Earthshaker out of Fissure range while wards whittle his HP.", teamfightTip: "Spread out instead of clumping so Echo Slam has few targets, and poison him early so he's forced to disengage.", suggestedItems: ["Aghanim's Scepter", "Orchid Malevolence", "Aether Lens"] },
+      { counterHeroId: "lycan", score: 2, categories: ["Push Punishment", "Mobility Control"], reason: "Lycan's split-push playstyle with summoned wolves avoids grouping for Earthshaker's Echo Slam, and Shapeshift's burst damage and speed let him kill the fragile Earthshaker before he can chain his combo.", laneTip: "Keep wolves on separate lanes so Earthshaker has no easy multi-unit Echo Slam setup, and out-farm him instead of contesting.", teamfightTip: "Shapeshift straight onto Earthshaker to burst him down 1v1 before he can land Echo Slam on a clumped team.", suggestedItems: ["Helm of the Dominator", "Black King Bar", "Assault Cuirass"] },
+      { counterHeroId: "viper", score: 2, categories: ["Mana Burn", "Mobility Control"], reason: "Viper's poison slows deny Earthshaker the positioning he needs to line up Fissure, and Nethertoxin's mana burn starves his mana-hungry Fissure-Aftershock-Echo Slam combo.", laneTip: "Poison Attack stacks slow Earthshaker so his Fissure lines become easy to dodge, forcing him to waste mana.", teamfightTip: "Burn his mana with Nethertoxin before the fight so he can't afford to combo into Echo Slam, then kite with the poison slow.", suggestedItems: ["Orchid Malevolence", "Diffusal Blade", "Eul's Scepter of Divinity"] }
+    ],
+    "omniknight": [
+      { counterHeroId: "storm-spirit", score: 4, categories: ["Magic Immunity", "Teamfight"], reason: "Storm Spirit's damage is entirely magical, so it passes straight through Guardian Angel's physical damage block, letting him burst targets even while Omniknight's ultimate is active.", laneTip: "Harass with Overload-empowered spells; Omniknight's Purification heal won't offset consistent Ball Lightning burst.", teamfightTip: "Ignore Guardian Angel and burst your target with Ball Lightning and Static Remnant since none of Storm's damage is physical.", suggestedItems: ["Orchid Malevolence", "Bloodstone", "Kaya and Sange"] },
+      { counterHeroId: "venomancer", score: 4, categories: ["Magic Immunity", "Mobility Control"], reason: "Venomancer's poison damage from Venomous Gale, Poison Sting, and Poison Nova is non-physical, so it keeps ticking through Guardian Angel's physical immunity, and the stacked slows prevent Omniknight from repositioning to save the target.", laneTip: "Stack Poison Sting and Venomous Gale on the same target for slow and consistent damage that outpaces Purification's single heal.", teamfightTip: "Poison your target before the fight so the DoT keeps ticking through Guardian Angel, and use the slow to stop them disengaging.", suggestedItems: ["Aghanim's Scepter", "Orchid Malevolence", "Aether Lens"] },
+      { counterHeroId: "tidehunter", score: 2, categories: ["Disable", "Magic Immunity", "Teamfight"], reason: "Ravage's stun and damage are magical, so it locks down and hurts Omniknight's team even through Guardian Angel, giving Tidehunter's team a free window to finish the kill.", laneTip: "Look for Gush to slow and poke Omniknight's lane partner; Kraken Shell already gives you the sustain to win extended trades.", teamfightTip: "Initiate Ravage onto the clumped team; the stun and damage go through Guardian Angel, opening a window to burst someone down.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Black King Bar"] },
+      { counterHeroId: "crystal-maiden", score: 2, categories: ["Disable", "Magic Immunity"], reason: "Frostbite roots the target while dealing magic damage that bypasses Guardian Angel, and Freezing Field's repeated magical hits chip a target down faster than Purification can heal it back.", laneTip: "Frostbite Omniknight or his partner to root and burst them down before Purification can offset the damage.", teamfightTip: "Land Freezing Field on a clumped fight; the repeated magic ticks work through Guardian Angel and can outpace his healing.", suggestedItems: ["Aghanim's Scepter", "Aeon Disk", "Glimmer Cape"] },
+      { counterHeroId: "lion", score: 2, categories: ["Silence", "Disable", "Magic Immunity"], reason: "Hex silences and disables the kill target or Omniknight himself so Purification and Guardian Angel can't be cast in time, while Finger of Death's magic burst still lands through Guardian Angel if it's already up.", laneTip: "Look to land Earth Spike into Hex on Omniknight's core to shut down their lane heal window and burn mana with Mana Drain.", teamfightTip: "Hex the priority target before diving so Omniknight can't Purification or Guardian Angel in time, then finish with Finger of Death.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Aether Lens"] }
+    ],
+    "invoker": [
+      { counterHeroId: "mirana", score: 3, categories: ["Disable", "Mobility Control"], reason: "Sacred Arrow's long range lets Mirana stun Invoker before he can land his own combo, and Leap gives her the mobility to dodge his skillshot spells and follow up.", laneTip: "Land Arrow on Invoker whenever he over-extends for EMP or Cold Snap range, punishing his fragile HP pool before he can react.", teamfightTip: "Snipe Invoker with Arrow from max range to interrupt his combo, then Leap in to finish him while he's recovering.", suggestedItems: ["Aether Lens", "Aghanim's Scepter", "Boots of Travel"] },
+      { counterHeroId: "naga-siren", score: 3, categories: ["Save", "Push Punishment"], reason: "Song of the Siren can put the team to sleep the instant Invoker starts channeling his combo, wasting his spell rotation, and Naga's illusion-based split push punishes teams built around his slow farming pattern.", laneTip: "Farm safely with illusions while avoiding Invoker's EMP and Sun Strike range, and look for Ensnare if he over-extends.", teamfightTip: "Sleep the team with Song of the Siren right as Invoker starts his combo to waste his mana and cooldowns, then clean up with illusions.", suggestedItems: ["Diffusal Blade", "Manta Style", "Aghanim's Scepter"] },
+      { counterHeroId: "enigma", score: 3, categories: ["Disable", "Teamfight"], reason: "Black Hole's channel deals massive magic damage that instantly deletes the squishy Invoker if he's caught, and Invoker has no reliable magic-immune escape once he's pulled in.", laneTip: "Avoid over-committing to Invoker trades pre-six; once Black Hole is up, look to pick him off in the fog with eidolons scouting his position.", teamfightTip: "Blink onto Invoker and channel Black Hole directly on him; without a magic-immunity escape he dies before the channel ends.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Black King Bar"] },
+      { counterHeroId: "lycan", score: 2, categories: ["Mobility Control", "Push Punishment"], reason: "Shapeshift's burst movement speed lets Lycan close Invoker's casting range almost instantly, killing him before he can kite with his spell combo, while relentless split-pushing denies the farm Invoker needs to scale.", laneTip: "Deny Invoker easy farm early by contesting the jungle and lane with wolves, since he's item and level dependent to be dangerous.", teamfightTip: "Shapeshift straight at Invoker and burst him in melee range before he can kite you with Tornado, EMP, or Cold Snap.", suggestedItems: ["Helm of the Overlord", "Black King Bar", "Sange and Yasha"] },
+      { counterHeroId: "templar-assassin", score: 2, categories: ["Teamfight", "Vision"], reason: "Refraction's damage-block charges soak Invoker's burst nukes like Sun Strike and Deafening Blast, letting Templar Assassin survive his combo and then melt him with Psi Blades and a Meld-boosted attack.", laneTip: "Meld from stealth to burst Invoker down early before he has mana for a full combo, using Psionic Trap to reveal him if he tries Ghost Walk invisibility.", teamfightTip: "Engage with Refraction charges up to soak his burst nukes, then melt him with Psi Blades once his combo is spent.", suggestedItems: ["Blink Dagger", "Desolator", "Black King Bar"] }
+    ],
+    "lion": [
+      { counterHeroId: "naga-siren", score: 5, categories: ["Save", "Teamfight"], reason: "Song of the Siren puts Lion's intended kill target to sleep and grants temporary invulnerability, letting the whole team dodge his Earth Spike into Hex into Finger of Death combo entirely.", laneTip: "Send a Mirror Image illusion to bait Lion's Earth Spike and Hex in lane while the real Naga farms Rip Tide harass safely.", teamfightTip: "Channel Song of the Siren the instant Lion starts his disable chain to put the whole team out of reach of his burst.", suggestedItems: ["Aghanim's Shard", "Diffusal Blade", "Manta Style"] },
+      { counterHeroId: "enigma", score: 4, categories: ["Disable", "Teamfight"], reason: "Black Hole disables Lion before he can start his own chain, and Midnight Pulse's damage-over-time plus the vacuum kills his low HP pool outright once trapped.", laneTip: "Send Eidolons from Demonic Conversion to harass Lion off the creep pull and drain his mana before he hits his level 6 combo.", teamfightTip: "Target Black Hole on Lion first when possible since trapping him removes his entire disable chain before it starts.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Scepter"] },
+      { counterHeroId: "lycan", score: 3, categories: ["Push Punishment", "Mobility Control"], reason: "Shapeshift's immunity to slows and Lycan's split-pushing wolves let him bypass Lion's disable chain by never grouping for a pick-off, while his lifesteal offsets Finger of Death burst.", laneTip: "Pull the lane hard and use a Summon Wolves scout to spot Lion's Earth Spike range before your support gets caught.", teamfightTip: "Split objectives with wolves elsewhere on the map so Lion never gets a clean pick, then Shapeshift in once his cooldowns are spent.", suggestedItems: ["Helm of the Overlord", "Aghanim's Scepter", "Assault Cuirass"] },
+      { counterHeroId: "viper", score: 2, categories: ["Mana Burn", "Lane Counter"], reason: "Nethertoxin drains Lion's small mana pool so he can't afford his Hex into Finger of Death combo, while Corrosive Skin's status resistance shortens how long his disables lock Viper down.", laneTip: "Poison Attack and stay on top of Lion in lane since he has no reliable escape from ranged poke and will burn mana trying to farm.", teamfightTip: "Burn Lion's mana with Nethertoxin before engagements so he can't complete his full disable-into-nuke combo.", suggestedItems: ["Orchid Malevolence", "Bottle", "Aghanim's Shard"] },
+      { counterHeroId: "windranger", score: 2, categories: ["Disable", "Lane Counter"], reason: "Shackleshot can lock Lion down first with a long-range disable, and Focus Fire's pure damage burst kills him quickly once his own combo is spent.", laneTip: "Use Shackleshot on the pull creep or a nearby tree to land a free stun on Lion and secure kills before he reaches his level 6 combo.", teamfightTip: "Save Focus Fire for Lion specifically since his low armor and HP pool die almost instantly to the pure damage burst.", suggestedItems: ["Orchid Malevolence", "Eul's Scepter of Divinity", "Boots of Travel"] }
+    ],
+    "crystal-maiden": [
+      { counterHeroId: "faceless-void", score: 3, categories: ["Disable", "Teamfight", "Mobility Control"], reason: "Chronosphere locks Crystal Maiden out of casting Frostbite or Freezing Field entirely while Void's team executes inside it, and Time Walk lets Void dodge her root before closing the gap.", laneTip: "Time Walk in to last-hit through her zone control and punish Crystal Maiden's low mobility once Frostbite is on cooldown.", teamfightTip: "Chrono the pickoff target the instant Crystal Maiden is caught out of position so she can't Frostbite-root your carry from range.", suggestedItems: ["Black King Bar", "Aghanim's Scepter", "Butterfly"] },
+      { counterHeroId: "lycan", score: 3, categories: ["Mobility Control", "Push Punishment"], reason: "Shapeshift grants immunity to Crystal Nova and Frostbite's slow, letting Lycan run down and burst Crystal Maiden before her aura-reliant team can peel.", laneTip: "Send a wolf to scout the pull camp so Lycan's jungle route isn't ganked by a repositioned Crystal Maiden roam.", teamfightTip: "Shapeshift straight through her slows to isolate and kill Crystal Maiden before she can Frostbite your carry.", suggestedItems: ["Helm of the Overlord", "Aghanim's Scepter", "Assault Cuirass"] },
+      { counterHeroId: "mirana", score: 3, categories: ["Disable", "Lane Counter"], reason: "Sacred Arrow out-ranges Frostbite and stuns Crystal Maiden long enough to burst her down before she can peel with Crystal Nova.", laneTip: "Arrow down the lane through the pull camp when Crystal Maiden overextends to secure an easy kill.", teamfightTip: "Use Moonlight Shadow to invis in and Arrow Crystal Maiden first, removing her ability to slow your team before the fight starts.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Boots of Travel"] },
+      { counterHeroId: "venomancer", score: 2, categories: ["Lane Counter", "Push Punishment"], reason: "Venomous Gale's stacking poison damage overwhelms Crystal Maiden's low base HP faster than she can out-heal or retreat from lane.", laneTip: "Stack Venomous Gale on Crystal Maiden every cooldown to zone her off the creep wave and force her out of XP range.", teamfightTip: "Poison Nova the clumped fight so Crystal Maiden can't stand near her carry to cast Crystal Nova without taking heavy damage.", suggestedItems: ["Aghanim's Shard", "Orchid Malevolence", "Aether Lens"] },
+      { counterHeroId: "spirit-breaker", score: 1, categories: ["Disable", "Mobility Control"], reason: "Charge of Darkness lets Spirit Breaker close the distance on Crystal Maiden instantly, and she has no dispel or escape to shake off Greater Bash once he arrives.", laneTip: "Charge Crystal Maiden the moment she wards or overextends since her only defense is Frostbite, which doesn't stop the initial gap-close.", teamfightTip: "Charge onto Crystal Maiden first in fights so her Crystal Nova and Frostbite never get cast on your team.", suggestedItems: ["Boots of Travel", "Aghanim's Scepter", "Silver Edge"] }
+    ],
+    "ancient-apparition": [
+      { counterHeroId: "enigma", score: 5, categories: ["Disable", "Teamfight"], reason: "Black Hole locks down Ancient Apparition before he can land Ice Blast, and his paper-thin HP pool dies to Midnight Pulse and Eidolons before he ever gets to cast.", laneTip: "Send Eidolons to harass Ancient Apparition off the pull camp early since he has no way to fight back at low levels.", teamfightTip: "Black Hole Ancient Apparition directly when possible so his anti-heal Ice Blast never lands on your carry.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Scepter"] },
+      { counterHeroId: "spirit-breaker", score: 3, categories: ["Disable", "Mobility Control"], reason: "Charge of Darkness closes the distance on Ancient Apparition instantly and Greater Bash keeps stunning him before his Ice Blast cast can go off.", laneTip: "Charge in on Ancient Apparition whenever he's caught out since he has zero mobility tools to juke the gap-close.", teamfightTip: "Rush down Ancient Apparition specifically since removing him early stops the anti-heal that would shut down your team's sustain.", suggestedItems: ["Boots of Travel", "Aghanim's Scepter", "Silver Edge"] },
+      { counterHeroId: "naga-siren", score: 3, categories: ["Save", "Push Punishment"], reason: "Naga Siren's split-push style avoids grouping for Ice Blast, and Song of the Siren can save the marked target from the anti-heal detonation before it kills them.", laneTip: "Use Rip Tide to poke Ancient Apparition down in lane since he has no mobility to avoid the slow-heavy trade.", teamfightTip: "Sing the moment Ancient Apparition drops Ice Blast on a low-health ally to deny the anti-heal kill.", suggestedItems: ["Aghanim's Shard", "Diffusal Blade", "Manta Style"] },
+      { counterHeroId: "viper", score: 3, categories: ["Mana Burn", "Lane Counter"], reason: "Nethertoxin burns through Ancient Apparition's mana pool faster than he can afford his costly Ice Blast, and Corrosive Skin's status resistance cuts down Cold Feet's stun duration.", laneTip: "Poison Attack and stay on top of Ancient Apparition in lane, since his low armor and mana pool can't sustain a long trade.", teamfightTip: "Burn his mana pre-fight with Nethertoxin so he can't afford to cast Ice Blast on your carry.", suggestedItems: ["Orchid Malevolence", "Bottle", "Aghanim's Shard"] },
+      { counterHeroId: "lycan", score: 2, categories: ["Mobility Control", "Push Punishment"], reason: "Shapeshift's immunity to slows negates both Cold Feet and Ice Blast, letting Lycan close in and kill Ancient Apparition before his combo ever lands.", laneTip: "Pull the wave to deny Ancient Apparition easy last hits while your wolves scout for his rotations.", teamfightTip: "Shapeshift past his slows directly onto Ancient Apparition so his anti-heal ultimate never gets a window to cast.", suggestedItems: ["Helm of the Overlord", "Aghanim's Scepter", "Assault Cuirass"] }
+    ],
+    "storm-spirit": [
+      { counterHeroId: "mirana", score: 4, categories: ["Disable", "Lane Counter"], reason: "Sacred Arrow's long stun locks Storm Spirit down before he can Ball Lightning away, and once he's arrow-stunned he has no burst window left to fight back.", laneTip: "Arrow Storm Spirit through the pull camp when he overextends to farm, since he has no way to escape once stunned.", teamfightTip: "Save Sacred Arrow for Storm Spirit's initiation and land it the instant he Ball Lightnings in, locking him down before he burns your backline.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Boots of Travel"] },
+      { counterHeroId: "huskar", score: 3, categories: ["Silence", "Lane Counter"], reason: "Inner Fire silences Storm Spirit, stripping away Ball Lightning and Overload so his entire kit goes dead, while Life Break's true damage burst finishes him off.", laneTip: "All-in Storm Spirit while Berserker's Blood is active at low HP, since his Ball Lightning cost can't cover both farming and escaping your burst.", teamfightTip: "Silence Storm Spirit with Inner Fire the moment he jumps in to prevent him from Ball Lightning-ing away or triggering Overload.", suggestedItems: ["Blade Mail", "Armlet of Mordiggian", "Aghanim's Shard"] },
+      { counterHeroId: "lycan", score: 3, categories: ["Mobility Control", "Push Punishment"], reason: "Shapeshift's true strike guarantees hits on Storm Spirit's low HP pool, and the speed boost lets Lycan close in even after a Ball Lightning escape attempt.", laneTip: "Use wolves to ward Storm Spirit's jungle camps so he can't safely farm mana for Ball Lightning ganks.", teamfightTip: "Shapeshift the instant Storm Spirit initiates to chase him down before he can retreat with a second Ball Lightning.", suggestedItems: ["Helm of the Overlord", "Assault Cuirass", "Aghanim's Scepter"] },
+      { counterHeroId: "faceless-void", score: 2, categories: ["Disable", "Teamfight"], reason: "Chronosphere freezes Storm Spirit mid-engage so his Ball Lightning momentum is wasted and he can't retreat, letting the team burst him down safely.", laneTip: "Time Walk to punish Storm Spirit's greedy Ball Lightning farm patterns in the jungle or lane.", teamfightTip: "Chrono Storm Spirit the instant he commits to a Ball Lightning jump so his engage becomes a death sentence.", suggestedItems: ["Black King Bar", "Aghanim's Scepter", "Butterfly"] },
+      { counterHeroId: "venomancer", score: 2, categories: ["Lane Counter", "Push Punishment"], reason: "Venomous Gale's damage-over-time keeps ticking through Storm Spirit's Ball Lightning travel, whittling down his low HP pool even as he tries to escape.", laneTip: "Land Venomous Gale on Storm Spirit whenever he goes for a rune or camp to poke him low before he can farm mana safely.", teamfightTip: "Nova the clumped fight so Storm Spirit's HP keeps dropping from the poison even after he Ball Lightnings out of range.", suggestedItems: ["Aghanim's Shard", "Orchid Malevolence", "Aether Lens"] }
+    ],
+    "io": [
+      { counterHeroId: "pudge", score: 3, categories: ["Disable", "Lane Counter"], reason: "Meat Hook can catch Io before he tethers away, and Dismember locks him in place long enough to burst down his low base HP and armor before Relocate's cast delay finishes.", laneTip: "Hook Io whenever he creeps close to harass, since he has no way to escape a landed hook before Relocate's teleport delay completes.", teamfightTip: "Dismember Io on sight in fights to stop him from Relocating his team out of a losing engagement.", suggestedItems: ["Blink Dagger", "Aghanim's Shard", "Aether Lens"] },
+      { counterHeroId: "ancient-apparition", score: 3, categories: ["Anti-Heal", "Disable"], reason: "Ice Blast's healing block completely nullifies Tether's regeneration for Io and his linked ally, turning Io's core sustain tool into a liability.", laneTip: "Zone Io off the lane with Cold Feet and Ice Vortex chip damage since Tether can't out-heal a stacked slow-poke.", teamfightTip: "Ice Blast the tethered carry immediately to shut off Io's healing before the fight turns into a sustain race.", suggestedItems: ["Aghanim's Shard", "Bottle", "Aether Lens"] },
+      { counterHeroId: "storm-spirit", score: 2, categories: ["Mobility Control", "Lane Counter"], reason: "Ball Lightning gives Storm Spirit enough burst mobility to catch Io even with Tether's speed boost active, and Overload's burst damage kills Io's thin HP pool in a couple of hits.", laneTip: "Ball Lightning into the lane to punish Io's low base damage and squishy body whenever Tether isn't active on an ally.", teamfightTip: "Jump onto Io first with Ball Lightning to remove his ability to Relocate the team out of a losing fight.", suggestedItems: ["Bottle", "Aghanim's Shard", "Orchid Malevolence"] },
+      { counterHeroId: "lion", score: 2, categories: ["Disable", "Lane Counter"], reason: "Earth Spike into Hex locks Io down instantly, and Finger of Death's burst kills him outright before Relocate's teleport delay can trigger.", laneTip: "Look for Earth Spike on Io whenever he ropes in for a heal or harass, since a landed stun into Hex is close to a guaranteed kill at low levels.", teamfightTip: "Combo Io directly in fights so Relocate never gets off before he's already dead.", suggestedItems: ["Aghanim's Shard", "Blink Dagger", "Aether Lens"] },
+      { counterHeroId: "natures-prophet", score: 2, categories: ["Disable", "Push Punishment"], reason: "Sprout boxes Io in with trees so Tether can't be used to walk away, and Wrath of Nature's bounce damage picks off his low HP pool from a full screen away.", laneTip: "Sprout Io the moment he overextends with a tethered partner to lock both of them in place for a kill.", teamfightTip: "Snipe Io with Wrath of Nature whenever the fight is lost, since his low HP means the bounce alone can finish him off.", suggestedItems: ["Aghanim's Scepter", "Boots of Travel", "Aghanim's Shard"] }
+    ],
+    "enigma": [
+      { counterHeroId: "natures-prophet", score: 4, categories: ["Push Punishment"], reason: "Nature's Prophet's Wrath of Nature deals bonus damage to non-hero units like Enigma's Eidolons, and his ability to teleport and split-push lets him avoid the grouped fights Black Hole is built around.", laneTip: "Let Enigma push and match his wave with Treants rather than trading, since standing still to fight only sets up his Black Hole timing.", teamfightTip: "Split off to a side lane and take towers instead of grouping, forcing Enigma's team to either abandon the push or fight without their Black Hole target.", suggestedItems: ["Boots of Travel", "Aghanim's Shard", "Solar Crest"] },
+      { counterHeroId: "terrorblade", score: 4, categories: ["Save", "Push Punishment"], reason: "Terrorblade can Sunder into a low-value illusion to dump Black Hole's damage onto a decoy, then swap back to keep splitting the map with his own illusions.", laneTip: "Farm safely under towers early since Terrorblade only needs levels and items before his illusions and Sunder make him very hard to lock down.", teamfightTip: "If Black Hole lands on Terrorblade, watch for an immediate Sunder swap and be ready to burst down the illusion he trades into instead.", suggestedItems: ["Manta Style", "Boots of Travel", "Sange and Yasha"] },
+      { counterHeroId: "pudge", score: 2, categories: ["Disable", "Lane Counter"], reason: "Pudge's long-range Meat Hook can pick off or interrupt Enigma before he ever gets within range to start channeling Black Hole.", laneTip: "Stay on the lookout for hook angles through trees and jungle gaps, since a single successful hook can delay Enigma's entire early game.", teamfightTip: "Use Meat Hook to fish Enigma out of position or interrupt his Black Hole channel the instant he starts casting.", suggestedItems: ["Aether Lens", "Blade Mail", "Aghanim's Scepter"] },
+      { counterHeroId: "earthshaker", score: 2, categories: ["Disable", "Teamfight"], reason: "Earthshaker's Fissure can block Enigma's path or interrupt his Black Hole channel outright, and Echo Slam can burst his low HP pool before he ever gets to ult.", laneTip: "Look for Fissure stun combos on Enigma early, since he has no escape and dies quickly if caught out of position.", teamfightTip: "Use Fissure to cut off Enigma's approach or cancel his Black Hole the moment he starts channeling.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Refresher Orb"] },
+      { counterHeroId: "huskar", score: 1, categories: ["Magic Immunity"], reason: "Huskar's Berserker's Blood grants stacking magic resistance as his HP drops, letting him shrug off Black Hole's damage and keep swinging.", laneTip: "Trade aggressively once Huskar has Armlet online, since his sustain and magic resistance make him hard to punish in melee range.", teamfightTip: "Have Huskar walk into Black Hole and let Berserker's Blood soak the damage while Life Break finishes off a priority target.", suggestedItems: ["Armlet of Mordiggian", "Battle Fury", "Satanic"] }
+    ],
+    "natures-prophet": [
+      { counterHeroId: "naga-siren", score: 2, categories: ["Push Punishment", "Save"], reason: "Naga Siren's Song of the Siren can sleep and grant invulnerability to her whole team, letting them disengage from Nature's Prophet's ganks, while her own Mirror Image illusions match his split-push pressure.", laneTip: "Farm safely and avoid overextending, since Naga can use Ensnare or simply out-wait you before Song of the Siren protects her carries from any gank you set up.", teamfightTip: "If Naga channels Song of the Siren, redirect your Treants and Wrath of Nature toward towers instead of forcing a fight you can't win through the invulnerability window.", suggestedItems: ["Diffusal Blade", "Manta Style", "Aghanim's Scepter"] },
+      { counterHeroId: "omniknight", score: 1, categories: ["Save", "Dispel", "Teamfight"], reason: "Omniknight's Guardian Angel grants his team physical damage immunity, neutralizing the physical damage from Nature's Prophet's Treants, while Purification's heal and dispel keep squishier allies alive through his pushes.", laneTip: "Expect strong sustain from Omniknight's Purification in lane, so burst damage and disables matter more than prolonged trades.", teamfightTip: "Use Guardian Angel right before Treants and illusions land their hits so the physical burst simply bounces off.", suggestedItems: ["Pipe of Insight", "Solar Crest", "Guardian Greaves"] },
+      { counterHeroId: "juggernaut", score: 1, categories: ["Magic Immunity", "Push Punishment"], reason: "Juggernaut's Blade Fury grants spell immunity while he clears waves and pushes lanes, letting him match Nature's Prophet's split-push game without fear of Sprout or ganks.", laneTip: "Use Blade Fury to clear the wave quickly and deny Nature's Prophet easy farm in the lane.", teamfightTip: "If Nature's Prophet tries to force a side objective, answer by pushing the opposite lane with Blade Fury rather than rotating to help.", suggestedItems: ["Phase Boots", "Battle Fury", "Manta Style"] },
+      { counterHeroId: "tidehunter", score: 1, categories: ["Disable", "Dispel", "Teamfight"], reason: "Tidehunter's Kraken Shell periodically removes negative buffs like Sprout's root, and Ravage can devastate a grouped push before Treants and illusions overwhelm a tower.", laneTip: "Stack Kraken Shell's damage threshold before engaging, since it can shrug off Sprout or other disables Nature's Prophet's allies set up.", teamfightTip: "Time Ravage for when Nature's Prophet's team commits to a push, catching Treants and heroes together before towers fall.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Guardian Greaves"] },
+      { counterHeroId: "dazzle", score: 1, categories: ["Save", "Lane Counter"], reason: "Shallow Grave keeps a threatened ally alive through Nature's Prophet's Treant pushes or dives, and Poison Touch's persistent slow punishes him if he's ever caught farming or split-pushing alone.", laneTip: "Poison Touch Nature's Prophet whenever he steps up to last hit alone, since he has no escape from the slow.", teamfightTip: "Shallow Grave whichever ally Nature's Prophet's Treants and allies focus so the push can't secure a kill.", suggestedItems: ["Aether Lens", "Glimmer Cape", "Force Staff"] }
+    ],
+    "windranger": [
+      { counterHeroId: "spectre", score: 4, categories: ["Teamfight"], reason: "Spectre's Dispersion reflects a percentage of damage taken as pure damage to nearby enemies, punishing Windranger's attack-speed-stacking Focus Fire, while Desolate's bonus damage against isolated heroes punishes her solo pick-off attempts.", laneTip: "Avoid trading directly, since Spectre scales past Windranger's early lane pressure once she has any farm.", teamfightTip: "Haunt in to threaten Windranger directly; if she Focus Fires anyone, Dispersion turns her own damage output against her team.", suggestedItems: ["Radiance", "Diffusal Blade", "Blink Dagger"] },
+      { counterHeroId: "naga-siren", score: 4, categories: ["Save", "Teamfight"], reason: "Naga Siren's Song of the Siren can sleep and grant invulnerability to the whole team, completely voiding Windranger's Shackleshot-into-Focus-Fire pick-off combo, while Mirror Image illusions can bait out Shackleshot's line requirement.", laneTip: "Play patiently and avoid standing in a line with an ally, since Shackleshot needs two units to chain.", teamfightTip: "Channel Song of the Siren the moment Windranger lands Shackleshot, negating the follow-up Focus Fire entirely.", suggestedItems: ["Aghanim's Scepter", "Manta Style", "Blink Dagger"] },
+      { counterHeroId: "lycan", score: 3, categories: ["Push Punishment", "Vision"], reason: "Lycan's global Wolves and split-push presence let him take towers and farm across the map while Windranger is busy hunting kills solo, so her pick-off playstyle can't keep pace with his map-wide pressure.", laneTip: "Don't contest Lycan's lane too hard; his Wolves start pressuring other lanes early regardless of what happens in yours.", teamfightTip: "Look to pick off Lycan's Wolves or interrupt Shapeshift before he can join a fight at full speed.", suggestedItems: ["Helm of the Dominator", "Boots of Travel", "Assault Cuirass"] },
+      { counterHeroId: "enigma", score: 3, categories: ["Disable", "Teamfight"], reason: "Enigma's Black Hole is a long-duration hold that lifts Windranger in place, and since Windrun only grants evasion against attacks rather than disable resistance, she has no way to escape once pulled in.", laneTip: "Play safe and out of Enigma's Malefice/Eidolon range, since getting locked down early snowballs his Black Hole timing.", teamfightTip: "Force Enigma to commit Black Hole on a less valuable target by keeping Windranger slightly off the main clump.", suggestedItems: ["Blink Dagger", "Refresher Orb", "Aghanim's Scepter"] },
+      { counterHeroId: "dazzle", score: 2, categories: ["Save"], reason: "Dazzle's Shallow Grave can make Windranger's intended kill target unkillable for several seconds, completely voiding the burst window from her Shackleshot into Focus Fire combo.", laneTip: "Keep Shadow Wave and Poison Touch on cooldown for sustain, since Windranger's poke relies on chip damage over time.", teamfightTip: "Pre-cast Shallow Grave on whichever ally Windranger locks down with Shackleshot before Focus Fire can finish them.", suggestedItems: ["Glimmer Cape", "Aether Lens", "Aghanim's Shard"] }
+    ],
+    "dazzle": [
+      { counterHeroId: "venomancer", score: 2, categories: ["Lane Counter", "Teamfight"], reason: "Venomancer's stacking Venomous Gale and Poison Sting deal continuous damage that keeps ticking through Shallow Grave's duration, so the poison often finishes the kill right after the grave expires.", laneTip: "Play defensively in lane, since Venomancer's poison stacks and Plague Wards punish standing near creep waves.", teamfightTip: "Stack poison on priority targets early in the fight so it keeps ticking after any Shallow Grave wears off.", suggestedItems: ["Orb of Venom", "Aghanim's Scepter", "Aghanim's Shard"] },
+      { counterHeroId: "lion", score: 1, categories: ["Silence", "Disable"], reason: "Lion's Hex silences and disables Dazzle entirely, shutting down Shallow Grave and Shadow Wave right when his team needs them most.", laneTip: "Look for Earth Spike into Hex combos on Dazzle whenever he wanders up to use Poison Touch or Shadow Wave.", teamfightTip: "Hex Dazzle before he can pre-cast Shallow Grave on the target you're about to burst.", suggestedItems: ["Blink Dagger", "Aether Lens", "Aghanim's Shard"] },
+      { counterHeroId: "invoker", score: 1, categories: ["Mana Burn", "Disable"], reason: "Invoker's EMP can burn away Dazzle's mana pool, denying him the mana needed to cast Shallow Grave or Shadow Wave, while his burst combo can kill Dazzle outright once he's locked down.", laneTip: "Harass Dazzle's mana with EMP early so he can't afford to spam Poison Touch or Shadow Wave.", teamfightTip: "Burn Dazzle's mana or stun him before he can pre-emptively Shallow Grave the target you intend to kill.", suggestedItems: ["Aghanim's Scepter", "Octarine Core", "Black King Bar"] }
+    ],
+    "venomancer": [
+      { counterHeroId: "naga-siren", score: 5, categories: ["Save", "Teamfight"], reason: "Naga Siren's Song of the Siren grants invulnerability during its channel, completely negating Venomancer's Poison Nova burst and any stacked poison ticking on the team.", laneTip: "Play a passive lane since Venomancer's poison stacks and Plague Wards punish extended trades.", teamfightTip: "Channel Song of the Siren as soon as Venomancer commits Poison Nova, letting the poison damage go to waste.", suggestedItems: ["Blink Dagger", "Aghanim's Scepter", "Manta Style"] },
+      { counterHeroId: "invoker", score: 2, categories: ["Mana Burn", "Disable"], reason: "Invoker's EMP mana-burns Venomancer and his burst combo can kill him before he sets up Plague Wards or stacks poison, while Ghost Walk lets his team disengage from lingering poison damage.", laneTip: "Punish Venomancer's low mobility with Cold Snap or Tornado combos whenever he pushes the wave to plant wards.", teamfightTip: "Focus Venomancer down early in the fight before his stacked poison and Nova can wear your team down.", suggestedItems: ["Blink Dagger", "Black King Bar", "Aghanim's Scepter"] },
+      { counterHeroId: "pudge", score: 2, categories: ["Disable", "Lane Counter"], reason: "Pudge's Meat Hook can snipe the low-mobility, low-HP Venomancer from long range before Plague Wards or Poison Nova threaten his team, and Dismember's self-heal lets him out-sustain the poison stacks while holding him in place.", laneTip: "Watch hook angles carefully since Venomancer has no escape once caught outside his wards.", teamfightTip: "Hook Venomancer out of position before he can plant Plague Wards or land Poison Nova.", suggestedItems: ["Aether Lens", "Blade Mail", "Aghanim's Scepter"] },
+      { counterHeroId: "lycan", score: 2, categories: ["Push Punishment", "Vision"], reason: "Lycan's split-push and global Wolves bypass Venomancer's static Plague Ward zone control entirely, taking towers elsewhere while his poison-based area denial goes to waste.", laneTip: "Don't overcommit to holding Lycan's lane; his Wolves already pressure the map regardless of the lane outcome.", teamfightTip: "Focus down Lycan's Wolves or interrupt Shapeshift so his push can't snowball past Venomancer's wards.", suggestedItems: ["Helm of the Dominator", "Boots of Travel", "Assault Cuirass"] },
+      { counterHeroId: "natures-prophet", score: 2, categories: ["Push Punishment"], reason: "Nature's Prophet's Wrath of Nature deals bonus damage to non-hero units, letting him snipe Venomancer's Plague Wards from anywhere on the map while his split-push bypasses Venomancer's zone control.", laneTip: "Trade wave control rather than contesting Venomancer directly, since he wants to hold the lane and stack poison on you.", teamfightTip: "Use Wrath of Nature to clear out Plague Wards from a distance before pushing through Venomancer's zone.", suggestedItems: ["Boots of Travel", "Aghanim's Shard", "Solar Crest"] }
+    ]
+  };
+
+  // ======================================================================
+  // APPLICATION STATE
+  // ======================================================================
+  var MAX_ENEMIES = 5;
+  // Official Dota 2 CDN (Valve/Cloudflare) — same source Dotabuff/OpenDota use
+  // for hero icons. Hotlinked, never copied/rehosted. If it ever 404s for a
+  // hero, that hero's onerror handler removes the <img> and the initials
+  // badge underneath (already in the DOM) is what's shown — see renderHeroAvatar.
+  var HERO_ICON_BASE_URL = 'https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/icons/';
+  var VALID_ATTRIBUTES = ['Strength', 'Agility', 'Intelligence', 'Universal'];
+  var VALID_POSITIONS = [1, 2, 3, 4, 5];
+  var CATEGORY_VOCAB = [
+    'Lane Counter', 'Disable', 'Break', 'Silence', 'Dispel', 'Anti-Heal',
+    'Illusion Clear', 'Mana Burn', 'Vision', 'Save', 'High Armor',
+    'Magic Immunity', 'Mobility Control', 'Push Punishment', 'Teamfight'
+  ];
+  var COVERAGE_BONUS_PER_EXTRA_ENEMY = 1;
+  var STORAGE_KEY = 'dota2CounterPicker.v1';
+
+  var state = {
+    selectedEnemyIds: [],
+    searchTerm: '',
+    selectedPosition: 'all',
+    selectedAttribute: 'all',
+    selectedCounterCategory: 'all'
+  };
+
+  var heroById = Object.create(null);
+  HEROES.forEach(function (hero) { heroById[hero.id] = hero; });
+
+  // ======================================================================
+  // DATA VALIDATION
+  // Runs once on init. Logs issues to the console; the UI keeps working by
+  // silently dropping any matchup entry that fails validation (see
+  // sanitizeMatchups) instead of crashing.
+  // ======================================================================
+  function validateData() {
+    var issues = [];
+    var idSet = Object.create(null);
+    HEROES.forEach(function (hero) {
+      if (!hero.id || typeof hero.id !== 'string') { issues.push('Hero missing a valid id.'); return; }
+      if (idSet[hero.id]) issues.push('Duplicate hero id: ' + hero.id);
+      idSet[hero.id] = true;
+      if (!hero.name) issues.push('Hero ' + hero.id + ' is missing a name.');
+      if (VALID_ATTRIBUTES.indexOf(hero.attribute) === -1) issues.push('Hero ' + hero.id + ' has an invalid attribute: ' + hero.attribute);
+      if (!Array.isArray(hero.positions) || hero.positions.length === 0 || hero.positions.some(function (p) { return VALID_POSITIONS.indexOf(p) === -1; })) {
+        issues.push('Hero ' + hero.id + ' has invalid positions.');
+      }
+    });
+    Object.keys(MATCHUPS).forEach(function (heroId) {
+      if (!idSet[heroId]) { issues.push('Matchup key references an unknown hero: ' + heroId); return; }
+      if (!Array.isArray(MATCHUPS[heroId])) { issues.push('Matchup list for ' + heroId + ' is not an array.'); return; }
+      var seenCounters = Object.create(null);
+      MATCHUPS[heroId].forEach(function (entry, idx) {
+        if (!entry || typeof entry !== 'object') { issues.push('Invalid matchup entry #' + idx + ' for ' + heroId + '.'); return; }
+        if (!idSet[entry.counterHeroId]) issues.push('Matchup for ' + heroId + ' references an unknown counter hero: ' + entry.counterHeroId);
+        if (entry.counterHeroId === heroId) issues.push('Hero ' + heroId + ' cannot be listed as its own counter.');
+        if (seenCounters[entry.counterHeroId]) issues.push('Duplicate counter ' + entry.counterHeroId + ' for hero ' + heroId + '.');
+        seenCounters[entry.counterHeroId] = true;
+        if (typeof entry.score !== 'number' || !isFinite(entry.score)) issues.push('Matchup ' + heroId + ' -> ' + entry.counterHeroId + ' has an invalid score.');
+        if (!Array.isArray(entry.categories) || entry.categories.some(function (c) { return CATEGORY_VOCAB.indexOf(c) === -1; })) {
+          issues.push('Matchup ' + heroId + ' -> ' + entry.counterHeroId + ' has an unrecognized category.');
+        }
+        if (!entry.reason) issues.push('Matchup ' + heroId + ' -> ' + entry.counterHeroId + ' is missing a reason.');
+      });
+    });
+    if (issues.length) {
+      console.warn('[Dota 2 Hero Counter Picker] Data validation found ' + issues.length + ' issue(s):');
+      issues.forEach(function (issue) { console.warn(' - ' + issue); });
+    }
+    return issues;
+  }
+
+  function sanitizeMatchups() {
+    Object.keys(MATCHUPS).forEach(function (heroId) {
+      if (!heroById[heroId] || !Array.isArray(MATCHUPS[heroId])) { delete MATCHUPS[heroId]; return; }
+      var seen = Object.create(null);
+      MATCHUPS[heroId] = MATCHUPS[heroId].filter(function (entry) {
+        if (!entry || entry.disabled === true) return false;
+        if (!heroById[entry.counterHeroId] || entry.counterHeroId === heroId) return false;
+        if (typeof entry.score !== 'number' || !isFinite(entry.score)) return false;
+        if (seen[entry.counterHeroId]) return false;
+        seen[entry.counterHeroId] = true;
+        entry.categories = Array.isArray(entry.categories) ? entry.categories.filter(function (c) { return CATEGORY_VOCAB.indexOf(c) !== -1; }) : [];
+        entry.suggestedItems = Array.isArray(entry.suggestedItems) ? entry.suggestedItems : [];
+        entry.reason = entry.reason || '';
+        entry.laneTip = entry.laneTip || '';
+        entry.teamfightTip = entry.teamfightTip || '';
+        return true;
+      });
+    });
+  }
+
+  // ======================================================================
+  // DOM REFERENCES
+  // ======================================================================
+  var refs = {};
+  function cacheRefs() {
+    refs.searchInput = document.getElementById('hero-search');
+    refs.heroGrid = document.getElementById('hero-grid');
+    refs.trayStatus = document.getElementById('tray-status');
+    refs.enemyTray = document.getElementById('enemy-tray');
+    refs.clearDraftBtn = document.getElementById('clear-draft-btn');
+    refs.filterPosition = document.getElementById('filter-position');
+    refs.filterAttribute = document.getElementById('filter-attribute');
+    refs.filterCategory = document.getElementById('filter-category');
+    refs.recommendations = document.getElementById('recommendations');
+    refs.shareBtn = document.getElementById('share-btn');
+    refs.shareStatus = document.getElementById('share-status');
+    refs.shareFallback = document.getElementById('share-fallback');
+    refs.patchBadge = document.getElementById('patch-badge');
+    refs.patchFooterText = document.getElementById('patch-footer-text');
+  }
+
+  // ======================================================================
+  // UTILITIES
+  // ======================================================================
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    if (attrs) {
+      Object.keys(attrs).forEach(function (key) {
+        var value = attrs[key];
+        if (value == null) return;
+        if (key === 'class') node.className = value;
+        else if (key === 'text') node.textContent = value;
+        else if (key === 'html_unsafe_skip') { /* intentionally unsupported */ }
+        else node.setAttribute(key, value);
+      });
+    }
+    (children || []).forEach(function (child) {
+      if (child == null) return;
+      node.appendChild(typeof child === 'string' ? document.createTextNode(child) : child);
+    });
+    return node;
+  }
+
+  function formatSigned(n) {
+    return (n >= 0 ? '+' : '') + n;
+  }
+
+  function normalize(str) {
+    return String(str || '').toLowerCase();
+  }
+
+  function getInitials(name) {
+    var parts = String(name).split(/[\s'-]+/).filter(Boolean);
+    var first = parts[0] ? parts[0][0] : '';
+    var second = parts[1] ? parts[1][0] : (parts[0] && parts[0][1] ? parts[0][1] : '');
+    return (first + second).toUpperCase();
+  }
+
+  function formatPositions(hero) {
+    return hero.positions.map(function (p) { return 'P' + p; }).join(' · ');
+  }
+
+  function attributeClass(attribute) {
+    return 'attr-' + normalize(attribute);
+  }
+
+  // Initials badge is always in the DOM as the base layer; the real hero
+  // icon (when available) is layered on top and removes itself on error,
+  // so a broken/renamed CDN path degrades gracefully instead of showing a
+  // broken-image glyph.
+  function renderHeroAvatar(hero) {
+    var avatar = el('span', { class: 'hero-avatar ' + attributeClass(hero.attribute), 'aria-hidden': 'true' }, [getInitials(hero.name)]);
+    if (hero.icon) {
+      var img = document.createElement('img');
+      img.className = 'hero-avatar-img';
+      img.src = HERO_ICON_BASE_URL + hero.icon + '.png';
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.onerror = function () { img.remove(); };
+      avatar.appendChild(img);
+    }
+    return avatar;
+  }
+
+  // ======================================================================
+  // SEARCH LOGIC
+  // ======================================================================
+  function heroMatchesTerm(hero, term) {
+    if (!term) return true;
+    var name = normalize(hero.name);
+    if (name.indexOf(term) !== -1) return true;
+    return (hero.aliases || []).some(function (alias) { return normalize(alias).indexOf(term) !== -1; });
+  }
+
+  function getVisibleHeroes() {
+    var term = normalize(state.searchTerm.trim());
+    var list = HEROES.filter(function (hero) { return heroMatchesTerm(hero, term); });
+    list.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    return { term: state.searchTerm.trim(), list: list };
+  }
+
+  function renderHighlightedName(name, rawTerm) {
+    var lowerName = name.toLowerCase();
+    var lowerTerm = rawTerm.toLowerCase().trim();
+    if (!lowerTerm) return document.createTextNode(name);
+    var idx = lowerName.indexOf(lowerTerm);
+    if (idx === -1) return document.createTextNode(name);
+    var frag = document.createDocumentFragment();
+    if (idx > 0) frag.appendChild(document.createTextNode(name.slice(0, idx)));
+    frag.appendChild(el('mark', null, [name.slice(idx, idx + lowerTerm.length)]));
+    if (idx + lowerTerm.length < name.length) frag.appendChild(document.createTextNode(name.slice(idx + lowerTerm.length)));
+    return frag;
+  }
+
+  // ======================================================================
+  // DRAFT SELECTION LOGIC
+  // ======================================================================
+  function focusHeroTile(heroId) {
+    var btn = refs.heroGrid.querySelector('[data-hero-id="' + heroId + '"]');
+    if (btn) btn.focus();
+  }
+
+  function toggleEnemy(heroId) {
+    var idx = state.selectedEnemyIds.indexOf(heroId);
+    if (idx !== -1) {
+      state.selectedEnemyIds.splice(idx, 1);
+    } else {
+      if (state.selectedEnemyIds.length >= MAX_ENEMIES) return;
+      state.selectedEnemyIds.push(heroId);
+    }
+    persistState();
+    renderAll();
+    focusHeroTile(heroId);
+  }
+
+  function removeEnemy(heroId) {
+    var idx = state.selectedEnemyIds.indexOf(heroId);
+    if (idx === -1) return;
+    state.selectedEnemyIds.splice(idx, 1);
+    persistState();
+    renderAll();
+    focusHeroTile(heroId);
+  }
+
+  function clearEnemies() {
+    if (state.selectedEnemyIds.length === 0) return;
+    state.selectedEnemyIds = [];
+    persistState();
+    renderAll();
+  }
+
+  // ======================================================================
+  // FILTER LOGIC
+  // ======================================================================
+  function setFilter(name, value) {
+    state[name] = value;
+    persistState();
+    renderAll();
+  }
+
+  // ======================================================================
+  // SCORING ENGINE
+  // finalScore = (sum of matchup scores vs. every selected enemy this hero counters)
+  //            - (sum of matchup scores of every selected enemy that counters this hero back)
+  //            + (coverage bonus: +1 per additional enemy countered beyond the first)
+  // Position/attribute/counter-type filters narrow which heroes are scored at
+  // all (see getRecommendations) rather than adjusting the score itself.
+  // ======================================================================
+  function getMatchupEntry(heroId, counterHeroId) {
+    var list = MATCHUPS[heroId];
+    if (!Array.isArray(list)) return null;
+    for (var i = 0; i < list.length; i++) {
+      if (list[i].counterHeroId === counterHeroId) return list[i];
+    }
+    return null;
+  }
+
+  function computeCandidateScore(candidate, enemyIds) {
+    var positiveTotal = 0;
+    var penaltyTotal = 0;
+    var matchedAgainst = [];
+    var conflicts = [];
+
+    enemyIds.forEach(function (enemyId) {
+      var enemy = heroById[enemyId];
+      if (!enemy) return;
+      var beats = getMatchupEntry(enemyId, candidate.id);
+      if (beats) {
+        positiveTotal += beats.score;
+        matchedAgainst.push({ enemy: enemy, score: beats.score, categories: beats.categories, reason: beats.reason, laneTip: beats.laneTip, teamfightTip: beats.teamfightTip, suggestedItems: beats.suggestedItems });
+      }
+      var beatenBy = getMatchupEntry(candidate.id, enemyId);
+      if (beatenBy) {
+        penaltyTotal += beatenBy.score;
+        conflicts.push({ enemy: enemy, score: beatenBy.score });
+      }
+    });
+
+    if (matchedAgainst.length === 0) return null;
+
+    var coverageBonus = Math.max(0, matchedAgainst.length - 1) * COVERAGE_BONUS_PER_EXTRA_ENEMY;
+    var finalScore = positiveTotal - penaltyTotal + coverageBonus;
+    var avgNetScore = (positiveTotal - penaltyTotal) / matchedAgainst.length;
+    var counterLevel = avgNetScore >= 4.5 ? 'Excellent' : (avgNetScore >= 3 ? 'Strong' : 'Situational');
+    var matchedCategories = [];
+    matchedAgainst.forEach(function (m) {
+      (m.categories || []).forEach(function (c) { if (matchedCategories.indexOf(c) === -1) matchedCategories.push(c); });
+    });
+
+    return {
+      hero: candidate,
+      finalScore: finalScore,
+      positiveTotal: positiveTotal,
+      penaltyTotal: penaltyTotal,
+      coverageBonus: coverageBonus,
+      matchedAgainst: matchedAgainst,
+      conflicts: conflicts,
+      counterLevel: counterLevel,
+      matchedCategories: matchedCategories
+    };
+  }
+
+  function getRawCandidateCount(enemyIds) {
+    var count = 0;
+    HEROES.forEach(function (hero) {
+      if (enemyIds.indexOf(hero.id) !== -1) return;
+      if (computeCandidateScore(hero, enemyIds)) count++;
+    });
+    return count;
+  }
+
+  function getRecommendations() {
+    var enemyIds = state.selectedEnemyIds;
+    if (enemyIds.length === 0) return [];
+    var candidates = [];
+    HEROES.forEach(function (hero) {
+      if (enemyIds.indexOf(hero.id) !== -1) return;
+      if (state.selectedAttribute !== 'all' && hero.attribute !== state.selectedAttribute) return;
+      if (state.selectedPosition !== 'all' && hero.positions.indexOf(Number(state.selectedPosition)) === -1) return;
+      var result = computeCandidateScore(hero, enemyIds);
+      if (!result) return;
+      if (state.selectedCounterCategory !== 'all' && result.matchedCategories.indexOf(state.selectedCounterCategory) === -1) return;
+      candidates.push(result);
+    });
+    candidates.sort(function (a, b) {
+      if (b.finalScore !== a.finalScore) return b.finalScore - a.finalScore;
+      if (b.matchedAgainst.length !== a.matchedAgainst.length) return b.matchedAgainst.length - a.matchedAgainst.length;
+      return a.hero.name.localeCompare(b.hero.name);
+    });
+    return candidates;
+  }
+
+  // ======================================================================
+  // SCORE EXPLANATION
+  // ======================================================================
+  // Compact, non-redundant recap of the arithmetic: the per-enemy "+4 vs
+  // Hero" numbers are already shown with full context in the card body
+  // above, so this only restates them as a bare equation (same order) plus
+  // whatever isn't shown elsewhere yet (the coverage bonus).
+  function buildScoreFormula(rec) {
+    var terms = rec.matchedAgainst.map(function (m) { return formatSigned(m.score); })
+      .concat(rec.conflicts.map(function (c) { return formatSigned(-c.score); }));
+    if (rec.coverageBonus) terms.push(formatSigned(rec.coverageBonus) + ' coverage');
+    return terms.join('  ') + '  =  ' + formatSigned(rec.finalScore);
+  }
+
+  // ======================================================================
+  // RECOMMENDATION RENDERING
+  // ======================================================================
+  function renderHeroGrid() {
+    var visible = getVisibleHeroes();
+    refs.heroGrid.textContent = '';
+    if (visible.list.length === 0) {
+      refs.heroGrid.appendChild(el('p', { class: 'empty-state', role: 'status' }, ['No heroes match “' + visible.term + '”. Try a different name or alias.']));
+      return;
+    }
+    visible.list.forEach(function (hero) {
+      var isSelected = state.selectedEnemyIds.indexOf(hero.id) !== -1;
+      var atCap = !isSelected && state.selectedEnemyIds.length >= MAX_ENEMIES;
+      var btn = el('button', {
+        type: 'button',
+        class: 'hero-tile' + (isSelected ? ' is-selected' : ''),
+        'aria-pressed': String(isSelected),
+        'data-action': 'toggle-enemy',
+        'data-hero-id': hero.id,
+        'aria-label': (isSelected ? 'Remove ' : 'Add ') + hero.name + (isSelected ? ' from' : ' to') + ' enemy draft'
+      }, [
+        renderHeroAvatar(hero),
+        el('span', { class: 'hero-name' }, [renderHighlightedName(hero.name, visible.term)]),
+        el('span', { class: 'hero-meta' }, [hero.attribute + ' · ' + formatPositions(hero)])
+      ]);
+      if (atCap) btn.disabled = true;
+      refs.heroGrid.appendChild(btn);
+    });
+  }
+
+  function renderEnemyTray() {
+    var n = state.selectedEnemyIds.length;
+    refs.trayStatus.textContent = n === 0
+      ? 'No enemies selected yet — search or tap a hero above.'
+      : n + ' of ' + MAX_ENEMIES + ' selected' + (n >= MAX_ENEMIES ? ' (max — remove one to add another)' : '.');
+
+    refs.enemyTray.textContent = '';
+    if (n === 0) { refs.clearDraftBtn.disabled = true; return; }
+    refs.clearDraftBtn.disabled = false;
+    var list = el('ul', { class: 'tray-list', 'aria-label': 'Selected enemy heroes' }, []);
+    state.selectedEnemyIds.forEach(function (id) {
+      var hero = heroById[id];
+      if (!hero) return;
+      list.appendChild(el('li', { class: 'tray-chip' }, [
+        renderHeroAvatar(hero),
+        el('span', null, [hero.name]),
+        el('button', { type: 'button', class: 'tray-remove', 'data-action': 'remove-enemy', 'data-hero-id': hero.id, 'aria-label': 'Remove ' + hero.name + ' from enemy draft' }, ['×'])
+      ]));
+    });
+    refs.enemyTray.appendChild(list);
+  }
+
+  function renderBreakdownItem(match) {
+    return el('li', null, [
+      el('p', null, [el('strong', { class: 'score-readout' }, [formatSigned(match.score)]), ' vs ' + match.enemy.name + ' — ' + match.reason]),
+      match.laneTip ? el('p', { class: 'tip' }, ['Lane: ' + match.laneTip]) : null,
+      match.teamfightTip ? el('p', { class: 'tip' }, ['Teamfight: ' + match.teamfightTip]) : null,
+      (match.suggestedItems && match.suggestedItems.length) ? el('p', { class: 'items' }, ['Items: ' + match.suggestedItems.join(', ')]) : null
+    ]);
+  }
+
+  function renderRecommendationCard(rec, index) {
+    var hero = rec.hero;
+    var totalEnemies = state.selectedEnemyIds.length;
+    var enemyNames = rec.matchedAgainst.map(function (m) { return m.enemy.name; }).join(', ');
+
+    var breakdownList = el('ul', null, rec.matchedAgainst.map(renderBreakdownItem));
+    var categoriesText = rec.matchedCategories.join(' · ');
+
+    var conflictNodes = rec.conflicts.map(function (c) {
+      return el('p', { class: 'rec-conflict' }, [
+        'Caution: ', el('span', { class: 'score-readout' }, [formatSigned(-c.score)]),
+        ' vs ' + c.enemy.name + ' — this enemy also counters ' + hero.name + '.'
+      ]);
+    });
+
+    return el('li', null, [
+      el('article', { class: 'rec-card', 'aria-labelledby': 'rec-name-' + hero.id }, [
+        el('header', { class: 'rec-card-head' }, [
+          el('span', { class: 'rec-rank' }, ['#' + (index + 1)]),
+          el('h3', { class: 'rec-name', id: 'rec-name-' + hero.id }, [hero.name]),
+          el('span', { class: 'pill pill-attr-' + normalize(hero.attribute) }, [hero.attribute]),
+          el('span', { class: 'rec-meta', 'aria-label': 'Positions ' + hero.positions.join(' and ') }, [formatPositions(hero) + ' · ' + hero.difficulty])
+        ]),
+        el('p', { class: 'rec-score-line' }, [rec.counterLevel + ' counter pick — score ', el('span', { class: 'score-readout' }, [formatSigned(rec.finalScore)])]),
+        el('p', { class: 'rec-covers' }, [totalEnemies > 1
+          ? 'Counters ' + rec.matchedAgainst.length + ' of ' + totalEnemies + ': ' + enemyNames
+          : 'Counters ' + enemyNames]),
+        categoriesText ? el('p', { class: 'rec-categories' }, ['Via ' + categoriesText]) : null,
+        el('div', { class: 'rec-breakdown' }, [breakdownList].concat(conflictNodes)),
+        el('details', { class: 'rec-explain' }, [
+          el('summary', null, ['Score breakdown']),
+          el('p', { class: 'rec-explain-formula score-readout' }, [buildScoreFormula(rec)])
+        ])
+      ])
+    ]);
+  }
+
+  function renderRecommendations() {
+    refs.recommendations.textContent = '';
+    if (state.selectedEnemyIds.length === 0) {
+      refs.recommendations.appendChild(el('p', { class: 'empty-state' }, ['Select an enemy hero above to see counter picks.']));
+      return;
+    }
+    var recs = getRecommendations();
+    if (recs.length === 0) {
+      var rawCount = getRawCandidateCount(state.selectedEnemyIds);
+      var message = rawCount === 0
+        ? 'No counters found for this combination yet. Try a different enemy hero.'
+        : 'No results for your current filters. Try clearing one.';
+      refs.recommendations.appendChild(el('p', { class: 'empty-state', role: 'status' }, [message]));
+      return;
+    }
+    var list = el('ol', { class: 'rec-list' }, recs.map(renderRecommendationCard));
+    refs.recommendations.appendChild(list);
+  }
+
+  function renderCategoryFilterOptions() {
+    var current = refs.filterCategory.value || 'all';
+    refs.filterCategory.textContent = '';
+    refs.filterCategory.appendChild(el('option', { value: 'all' }, ['All counter types']));
+    CATEGORY_VOCAB.forEach(function (cat) {
+      refs.filterCategory.appendChild(el('option', { value: cat }, [cat]));
+    });
+    refs.filterCategory.value = current;
+  }
+
+  function renderPatchMeta() {
+    var text = 'Patch ' + APP_META.patch + ' · reviewed ' + APP_META.lastReviewed;
+    refs.patchBadge.textContent = text;
+    refs.patchFooterText.textContent = 'Counter data last reviewed for Patch ' + APP_META.patch + ' on ' + APP_META.lastReviewed + '. Data version ' + APP_META.dataVersion + '. Coverage is a curated sample, not the full hero roster.';
+  }
+
+  function renderAll() {
+    renderHeroGrid();
+    renderEnemyTray();
+    renderRecommendations();
+  }
+
+  // ======================================================================
+  // CLIPBOARD SHARING
+  // ======================================================================
+  function buildShareText() {
+    var lines = ['Dota 2 counter recommendations', ''];
+    lines.push('Enemy draft:');
+    state.selectedEnemyIds.forEach(function (id) {
+      var hero = heroById[id];
+      if (hero) lines.push('- ' + hero.name);
+    });
+    lines.push('');
+    lines.push('Recommended counters:');
+    var recs = getRecommendations().slice(0, 5);
+    if (recs.length === 0) lines.push('(none for the current selection/filters)');
+    recs.forEach(function (rec, i) {
+      var catText = rec.matchedCategories.slice(0, 2).join(' and ');
+      lines.push((i + 1) + '. ' + rec.hero.name + (catText ? ' — ' + catText : ''));
+    });
+    lines.push('');
+    lines.push('Generated by Dota 2 Hero Counter Picker (fan-made, not affiliated with Valve).');
+    return lines.join('\n');
+  }
+
+  function legacyCopy(text) {
+    try {
+      var ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      return ok;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  function copyShareText() {
+    var text = buildShareText();
+    if (state.selectedEnemyIds.length === 0) {
+      refs.shareStatus.setAttribute('data-status', 'error');
+      refs.shareStatus.textContent = 'Select at least one enemy hero first.';
+      return;
+    }
+    function onSuccess() {
+      refs.shareStatus.setAttribute('data-status', 'success');
+      refs.shareStatus.textContent = 'Draft summary copied to clipboard.';
+      refs.shareFallback.hidden = true;
+    }
+    function onFailure() {
+      var ok = legacyCopy(text);
+      if (ok) { onSuccess(); return; }
+      refs.shareStatus.setAttribute('data-status', 'error');
+      refs.shareStatus.textContent = 'Could not copy automatically — select and copy the text below.';
+      refs.shareFallback.value = text;
+      refs.shareFallback.hidden = false;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(onSuccess, onFailure);
+    } else {
+      onFailure();
+    }
+  }
+
+  // ======================================================================
+  // LOCAL STORAGE (optional — app works fully without it)
+  // ======================================================================
+  function persistState() {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        selectedEnemyIds: state.selectedEnemyIds,
+        selectedPosition: state.selectedPosition,
+        selectedAttribute: state.selectedAttribute,
+        selectedCounterCategory: state.selectedCounterCategory
+      }));
+    } catch (err) {
+      // Storage unavailable (private mode, quota, disabled) — app continues without persistence.
+    }
+  }
+
+  function restoreState() {
+    try {
+      var raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return;
+      if (Array.isArray(parsed.selectedEnemyIds)) {
+        var seenIds = Object.create(null);
+        state.selectedEnemyIds = parsed.selectedEnemyIds.filter(function (id) {
+          if (typeof id !== 'string' || !heroById[id] || seenIds[id]) return false;
+          seenIds[id] = true;
+          return true;
+        }).slice(0, MAX_ENEMIES);
+      }
+      if (VALID_POSITIONS.indexOf(Number(parsed.selectedPosition)) !== -1 || parsed.selectedPosition === 'all') state.selectedPosition = parsed.selectedPosition;
+      if (VALID_ATTRIBUTES.indexOf(parsed.selectedAttribute) !== -1 || parsed.selectedAttribute === 'all') state.selectedAttribute = parsed.selectedAttribute;
+      if (CATEGORY_VOCAB.indexOf(parsed.selectedCounterCategory) !== -1 || parsed.selectedCounterCategory === 'all') state.selectedCounterCategory = parsed.selectedCounterCategory;
+    } catch (err) {
+      console.warn('[Dota 2 Hero Counter Picker] Ignoring corrupted local draft data.', err);
+      try { window.localStorage.removeItem(STORAGE_KEY); } catch (err2) { /* ignore */ }
+    }
+  }
+
+  // ======================================================================
+  // EVENT LISTENERS
+  // Analytics hook (not installed by default): a privacy-conscious or GA
+  // integration could call trackEvent('hero_searched' | 'enemy_selected' |
+  // 'recommendation_viewed' | 'position_filter_selected' | 'result_shared')
+  // from the spots marked below. No PII should ever be included.
+  // ======================================================================
+  function attachEventListeners() {
+    refs.searchInput.addEventListener('input', function (e) {
+      state.searchTerm = e.target.value;
+      // trackEvent('hero_searched')
+      renderHeroGrid();
+    });
+
+    refs.heroGrid.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-action="toggle-enemy"]');
+      if (!btn) return;
+      toggleEnemy(btn.getAttribute('data-hero-id'));
+      // trackEvent('enemy_selected')
+    });
+
+    refs.enemyTray.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-action="remove-enemy"]');
+      if (!btn) return;
+      removeEnemy(btn.getAttribute('data-hero-id'));
+    });
+
+    refs.clearDraftBtn.addEventListener('click', clearEnemies);
+
+    refs.filterPosition.addEventListener('change', function (e) {
+      setFilter('selectedPosition', e.target.value);
+      // trackEvent('position_filter_selected')
+    });
+    refs.filterAttribute.addEventListener('change', function (e) { setFilter('selectedAttribute', e.target.value); });
+    refs.filterCategory.addEventListener('change', function (e) { setFilter('selectedCounterCategory', e.target.value); });
+
+    refs.shareBtn.addEventListener('click', function () {
+      copyShareText();
+      // trackEvent('result_shared')
+    });
+  }
+
+  // ======================================================================
+  // INITIALIZATION
+  // ======================================================================
+  function init() {
+    cacheRefs();
+    validateData();
+    sanitizeMatchups();
+    restoreState();
+    renderPatchMeta();
+    renderCategoryFilterOptions();
+    refs.filterPosition.value = state.selectedPosition;
+    refs.filterAttribute.value = state.selectedAttribute;
+    refs.filterCategory.value = state.selectedCounterCategory;
+    attachEventListeners();
+    renderAll();
+  }
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+</script>
+</body>
+</html>
