@@ -2526,10 +2526,7 @@
   function persistState() {
     try {
       window.localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        selectedEnemyIds: state.selectedEnemyIds,
-        selectedPosition: state.selectedPosition,
-        selectedAttribute: state.selectedAttribute,
-        selectedCounterCategory: state.selectedCounterCategory
+        selectedEnemyIds: state.selectedEnemyIds
       }));
     } catch (err) {
       // Storage unavailable (private mode, quota, disabled) — app continues without persistence.
@@ -2550,9 +2547,9 @@
           return true;
         }).slice(0, MAX_ENEMIES);
       }
-      if (VALID_POSITIONS.indexOf(Number(parsed.selectedPosition)) !== -1 || parsed.selectedPosition === 'all') state.selectedPosition = parsed.selectedPosition;
-      if (VALID_ATTRIBUTES.indexOf(parsed.selectedAttribute) !== -1 || parsed.selectedAttribute === 'all') state.selectedAttribute = parsed.selectedAttribute;
-      if (CATEGORY_VOCAB.indexOf(parsed.selectedCounterCategory) !== -1 || parsed.selectedCounterCategory === 'all') state.selectedCounterCategory = parsed.selectedCounterCategory;
+      // Filters (position/attribute/counter type) are intentionally NOT restored —
+      // they always start at "All" so a filter left on from a previous visit can
+      // never make the app look like it has no results.
     } catch (err) {
       console.warn('[Dota 2 Hero Counter Picker] Ignoring corrupted local draft data.', err);
       try { window.localStorage.removeItem(STORAGE_KEY); } catch (err2) { /* ignore */ }
