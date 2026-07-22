@@ -245,23 +245,56 @@
   .hero-grid-fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
   .hero-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
-    gap: 8px;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 10px;
     margin-top: 12px;
   }
   .hero-tile {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    text-align: center;
-    padding: 10px 6px;
-    background: var(--bg-elevated);
+    position: relative;
+    aspect-ratio: 16 / 10;
+    min-height: 44px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    padding: 0;
+    background: var(--bg-elevated-2);
+    border: 2px solid transparent;
+    transition: transform 0.12s ease, border-color 0.12s ease;
   }
+  .hero-tile:hover { transform: translateY(-2px); border-color: var(--border); }
   .hero-tile.is-selected {
     border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent), 0 0 16px rgba(224, 166, 58, 0.35);
+  }
+  .hero-tile:disabled:hover { transform: none; }
+
+  /* Real hero art (Valve/Cloudflare CDN, hotlinked) fills the tile. An
+     always-present colored-initials layer sits underneath as the fallback,
+     so a failed image load never shows a broken-image glyph. */
+  .hero-portrait { position: absolute; inset: 0; display: block; }
+  .hero-portrait-fallback {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.4rem;
     background: var(--bg-elevated-2);
   }
+  .hero-portrait-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .hero-portrait-attr-bar { position: absolute; top: 0; left: 0; right: 0; height: 4px; background: currentColor; }
+  .hero-portrait.attr-strength { color: var(--attr-strength); }
+  .hero-portrait.attr-agility { color: var(--attr-agility); }
+  .hero-portrait.attr-intelligence { color: var(--attr-intelligence); }
+  .hero-portrait.attr-universal { color: var(--attr-universal); }
+
+  .hero-tile-scrim {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 6px 8px;
+    background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.55) 40%, rgba(0,0,0,0) 75%);
+    text-align: left;
+  }
+  .hero-tile-name { color: #fff; font-weight: 700; font-size: 0.8rem; line-height: 1.2; }
+  .hero-tile-meta { color: rgba(255,255,255,0.75); font-size: 0.66rem; }
+  mark { background: var(--accent); color: var(--accent-text); border-radius: 3px; }
+
   .hero-avatar {
     position: relative;
     width: 40px; height: 40px;
@@ -284,9 +317,6 @@
   .hero-avatar.attr-agility { color: var(--attr-agility); }
   .hero-avatar.attr-intelligence { color: var(--attr-intelligence); }
   .hero-avatar.attr-universal { color: var(--attr-universal); }
-  .hero-name { font-size: 0.82rem; font-weight: 600; }
-  .hero-meta { font-size: 0.7rem; color: var(--text-faint); }
-  mark { background: var(--accent); color: var(--accent-text); border-radius: 3px; }
   .empty-state { color: var(--text-dim); font-style: italic; }
 
   .tray-status { color: var(--text-dim); font-size: 0.85rem; margin: 8px 0; }
@@ -350,6 +380,14 @@
     display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
     margin-bottom: 6px;
   }
+  .hero-portrait.rec-thumb {
+    position: relative;
+    width: 56px; height: 32px;
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+  }
+  .hero-portrait.rec-thumb .hero-portrait-fallback { font-size: 0.68rem; }
   .rec-rank { color: var(--text-faint); font-weight: 700; }
   .rec-name { margin: 0; font-size: 1.05rem; flex: 1 1 auto; }
   .pill {
@@ -971,6 +1009,9 @@
   // hero, that hero's onerror handler removes the <img> and the initials
   // badge underneath (already in the DOM) is what's shown — see renderHeroAvatar.
   var HERO_ICON_BASE_URL = 'https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/icons/';
+  // Same Valve/Cloudflare CDN, larger "hero select screen" portrait (256x144) instead
+  // of the small square icon — used for the browsable grid and recommendation cards.
+  var HERO_PORTRAIT_BASE_URL = 'https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/';
   var VALID_ATTRIBUTES = ['Strength', 'Agility', 'Intelligence', 'Universal'];
   var VALID_POSITIONS = [1, 2, 3, 4, 5];
   var CATEGORY_VOCAB = [
@@ -1139,6 +1180,29 @@
       avatar.appendChild(img);
     }
     return avatar;
+  }
+
+  // Larger "hero select screen" portrait used for the browsable grid and
+  // recommendation cards. Same fallback pattern as renderHeroAvatar: the
+  // colored initials layer is always in the DOM underneath, so a failed
+  // image load just reveals it instead of a broken-image icon.
+  function renderHeroPortrait(hero, extraClass) {
+    var wrap = el('span', { class: 'hero-portrait ' + attributeClass(hero.attribute) + (extraClass ? ' ' + extraClass : ''), 'aria-hidden': 'true' }, [
+      el('span', { class: 'hero-portrait-fallback' }, [getInitials(hero.name)])
+    ]);
+    if (hero.icon) {
+      var img = document.createElement('img');
+      img.className = 'hero-portrait-img';
+      img.src = HERO_PORTRAIT_BASE_URL + hero.icon + '.png';
+      img.alt = '';
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.referrerPolicy = 'no-referrer';
+      img.onerror = function () { img.remove(); };
+      wrap.appendChild(img);
+    }
+    wrap.appendChild(el('span', { class: 'hero-portrait-attr-bar' }));
+    return wrap;
   }
 
   // ======================================================================
@@ -1344,9 +1408,11 @@
         'data-hero-id': hero.id,
         'aria-label': (isSelected ? 'Remove ' : 'Add ') + hero.name + (isSelected ? ' from' : ' to') + ' enemy draft'
       }, [
-        renderHeroAvatar(hero),
-        el('span', { class: 'hero-name' }, [renderHighlightedName(hero.name, visible.term)]),
-        el('span', { class: 'hero-meta' }, [hero.attribute + ' · ' + formatPositions(hero)])
+        renderHeroPortrait(hero),
+        el('span', { class: 'hero-tile-scrim' }, [
+          el('span', { class: 'hero-tile-name' }, [renderHighlightedName(hero.name, visible.term)]),
+          el('span', { class: 'hero-tile-meta' }, [formatPositions(hero)])
+        ])
       ]);
       if (atCap) btn.disabled = true;
       refs.heroGrid.appendChild(btn);
@@ -1402,6 +1468,7 @@
     return el('li', null, [
       el('article', { class: 'rec-card', 'aria-labelledby': 'rec-name-' + hero.id }, [
         el('header', { class: 'rec-card-head' }, [
+          renderHeroPortrait(hero, 'rec-thumb'),
           el('span', { class: 'rec-rank' }, ['#' + (index + 1)]),
           el('h3', { class: 'rec-name', id: 'rec-name-' + hero.id }, [hero.name]),
           el('span', { class: 'pill pill-attr-' + normalize(hero.attribute) }, [hero.attribute]),

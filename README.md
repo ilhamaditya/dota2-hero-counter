@@ -102,14 +102,13 @@ Defined in `index.html` inside the `HEROES` array:
   roles: ["Carry", "Escape"],// free-text display tags
   difficulty: "Medium",      // "Easy" | "Medium" | "Hard"
   icon: "antimage"           // optional: Valve's internal hero codename, used to hotlink
-                              // that hero's official portrait from Dota 2's own CDN
-                              // (cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/heroes/icons/<icon>.png).
-                              // Omit if unknown/unverified — the initials badge is the
-                              // permanent fallback and is what renders if this 404s.
+                              // that hero's official art from Dota 2's own CDN. Omit if
+                              // unknown/unverified — the initials badge is the permanent
+                              // fallback and is what renders if the image 404s.
 }
 ```
 
-Hero icons are hotlinked directly from Valve's official CDN (the same source Dotabuff/OpenDota use) — never copied or rehosted in this repo. This is the one deliberate exception to the "no unlicensed hero artwork" rule: the images are served by Valve's own servers, not stored or distributed by this project. If that CDN path ever changes or 404s for a hero, the `<img>`'s `onerror` handler removes it and the initials badge underneath (always rendered, never removed) is what the user sees — there is no broken-image state.
+Hero art is hotlinked directly from Valve's official CDN (the same source Dotabuff/OpenDota use) — never copied or rehosted in this repo. Two sizes are used from the same `<icon>` codename: a small square icon (`heroes/icons/<icon>.png`, 32×32) on the compact enemy-tray chips, and a larger "hero select screen" portrait (`heroes/<icon>.png`, 256×144) on the browsable hero grid and recommendation cards, both under `cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/`. This is the one deliberate exception to the "no unlicensed hero artwork" rule: the images are served by Valve's own servers, not stored or distributed by this project. If a CDN path ever changes or 404s for a hero, the `<img>`'s `onerror` handler removes it and the colored-initials layer underneath (always rendered, never removed) is what the user sees — there is no broken-image state.
 
 ## Matchup data model
 
