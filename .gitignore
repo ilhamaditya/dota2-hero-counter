@@ -20,3 +20,6 @@ Thumbs.db
 *.log
 *.tmp
 *.bak
+
+# Playwright test artifacts
+.playwright-mcp/
