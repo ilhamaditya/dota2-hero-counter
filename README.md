@@ -8,7 +8,7 @@ Live concept: search or tap up to 5 enemy heroes → get ranked, explained count
 
 - **Problem**: during drafting, players need a fast, low-friction way to sanity-check counter picks against one or more enemy heroes.
 - **Solution**: a static page with a hand-curated hero/matchup dataset and a transparent, deterministic scoring engine that runs entirely in the browser.
-- **Monetization**: designed for Google AdSense, with clearly marked, layout-stable ad placeholders (no real ad code included).
+- **Monetization**: no ads currently included; can be added later (see "AdSense integration notes" below).
 
 ## Product constraints
 
@@ -132,7 +132,9 @@ The data is normalized: general hero facts live only in `HEROES`; matchup-specif
 
 ## Scoring methodology
 
-**Matchup data source:** which heroes counter which, and how strongly, is derived from real aggregate match win-rate data pulled from OpenDota's public statistics API (patch 7.41d snapshot), not purely theorycrafted ability interactions. For each of the 31 heroes in this app, its listed counters are the opponents (restricted to this app's own 31-hero roster) it has historically had the worst win rate against, filtered to matchups with at least 15 recorded games in the sampled data. Each matchup's 0-5 `score` is derived directly from that win-rate gap:
+**Matchup data source:** this app now covers the full 127-hero roster, built from two distinct sources with different rigor — kept separate here for honesty, not blended into a single claim.
+
+For a core set of **31 commonly picked heroes**, matchups are derived from real aggregate match win-rate data pulled from OpenDota's public statistics API (patch 7.41d snapshot). Each hero's listed counters (restricted to that same 31-hero subset) are the opponents it has historically had the worst win rate against, filtered to matchups with at least 15 recorded games in the sampled data. Each matchup's 0-5 `score` is derived directly from that win-rate gap:
 
 | Countered hero's win rate vs. this counter | Score |
 |---|---|
@@ -142,7 +144,9 @@ The data is normalized: general hero facts live only in `HEROES`; matchup-specif
 | 40–45% | 2 (minor) |
 | 45% and up | 1 (slight) |
 
-The `reason`, `laneTip`, `teamfightTip`, and `suggestedItems` text on each entry is then written to explain the mechanical, ability-level basis for that statistically-supported pairing — the pairing and score are data-derived; the explanation is authored.
+For the **remaining ~96 heroes** (and any additional pairings among the original 31 not already covered by win-rate data), matchups come from a curated, patch-agnostic reference of durable mechanical interactions (ability and item counters) — not live win-rate statistics. Each pairing's priority rank (1 = hardest counter, 5 = most situational) maps to the same 0-5 `score` scale (priority 1→5, 2→4, 3→3, 4→2, 5→1).
+
+The `reason`, `laneTip`, `teamfightTip`, and `suggestedItems` text on every entry is authored to explain the mechanical, ability-level basis for that pairing — the pairing and score are always fixed by the underlying source (win-rate data or the curated reference); only the explanation is written.
 
 **Per-draft scoring:** for the currently selected enemy draft, each candidate counter hero gets:
 
@@ -155,7 +159,7 @@ finalScore =
 
 Position, attribute, and counter-type filters only narrow the candidates shown; they do not modify scores.
 
-Recommendations are sorted by `finalScore`, then by number of enemies countered, then alphabetically — always deterministic, no randomness. This is a snapshot of aggregate statistics from one point in time, restricted to a 31-hero sample — **not** a live win-rate feed. The underlying numbers shift with every patch and as the meta evolves, so treat it as informed guidance to verify against current patch notes, not a permanent fact. See the in-page "Methodology" section for the same explanation aimed at end users.
+Recommendations are sorted by `finalScore`, then by number of enemies countered, then alphabetically — always deterministic, no randomness. This is a snapshot from one point in time covering the full 127-hero roster — **not** a live feed. The underlying numbers shift with every patch and as the meta evolves, so treat it as informed guidance to verify against current patch notes, not a permanent fact. See the in-page "Methodology" section for the same explanation aimed at end users.
 
 ## How to add a hero
 
@@ -197,15 +201,7 @@ This single edit updates the header badge, footer text, and stays consistent eve
 
 ## AdSense integration notes
 
-Five placeholder slots are marked with HTML comments (`<!-- AdSense placement: ... -->`) and a `.ad-slot` div with a reserved `min-height` to avoid layout shift:
-
-1. Below the introduction
-2. Below the selected enemy draft
-3. Between filters and recommendations
-4. After the top recommendations
-5. Before the FAQ/footer boundary
-
-To go live, replace each `.ad-slot` div's contents with your AdSense `<ins class="adsbygoogle">` snippet and add the AdSense loader script — no other markup changes are needed. No real publisher ID or ad code is included in this repo.
+There are currently no ad placeholders in the markup — empty "Advertisement space" boxes were removed since they read as broken/confusing to visitors with no ads actually configured. To add Google AdSense later, insert `<ins class="adsbygoogle">` snippets directly at your chosen placements (e.g. below the introduction, between filters and recommendations, before the footer) along with the AdSense loader script, and give each a reserved `min-height` to avoid layout shift.
 
 ## SEO checklist
 
@@ -237,8 +233,8 @@ This is an independent, fan-made tool. It is **not affiliated with, endorsed by,
 
 ## Maintenance guide
 
-- After each balance patch: re-pull matchup win rates for the 31-hero roster from `https://api.opendota.com/api/heroes/<opendota_id>/matchups` (hero id mapping via `https://api.opendota.com/api/heroes`), re-derive scores per the table in "Scoring methodology" above, review/update `reason`/`laneTip`/`teamfightTip`/`suggestedItems`, or `disabled: true` stale entries, then bump `APP_META`.
+- After each balance patch: for the win-rate-grounded 31-hero subset, re-pull matchup win rates from `https://api.opendota.com/api/heroes/<opendota_id>/matchups` (hero id mapping via `https://api.opendota.com/api/heroes`), re-derive scores per the table in "Scoring methodology" above; for the rest of the roster, review the curated pairings for continued accuracy. Either way, review/update `reason`/`laneTip`/`teamfightTip`/`suggestedItems`, or `disabled: true` stale entries, then bump `APP_META`.
 - OpenDota is queried only as a one-time authoring step when refreshing the dataset — the shipped app itself makes no external calls at runtime.
-- Keep the dataset curated rather than exhaustive — this release covers 31 commonly picked heroes (all 4 attributes, all 5 positions), not the full roster. Coverage is explicitly labeled as a sample in-page and here.
+- The dataset now covers the full 127-hero roster. Some heroes (mostly from the curated-reference subset) never appear as a *recommended* counter for anyone else — this reflects a real gap in the source reference, not a bug; do not fabricate a pairing just to fill it.
 - Run the app in a browser and check the console after any data edit — `validateData()` will flag broken references immediately.
 - No dependency updates are ever required since there are no dependencies.
