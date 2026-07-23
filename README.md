@@ -214,7 +214,7 @@ There are currently no ad placeholders in the markup — empty "Advertisement sp
 - [x] `robots.txt` and `sitemap.xml`
 - [ ] Replace all `https://dota2-hero-counter.example.com/` placeholders with your real domain before launch
 - [ ] Add a real 1200×630 social share image (currently falls back to the favicon)
-- [ ] Replace the placeholder `hello@dota2-hero-counter.example.com` Contact address in `index.html` with a real, monitored inbox before launch
+- [x] Replace the placeholder Contact address in `index.html` with a real, monitored inbox
 
 ## Accessibility checklist
 
